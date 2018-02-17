@@ -1,0 +1,620 @@
+/* PAGE */
+
+/*
+
+colour pallate: http://www.colourlovers.com/palette/3205166/Firestarter
+
+light blue - 177B9F
+medium blue - 175772
+dark blue - 103A52
+red/orange - FF5934
+toape? - FAE7C7
+
+*/
+
+html{
+
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#177b9f+0,175772+100 */
+    background: #177b9f; /* Old browsers */
+    background: -moz-radial-gradient(center, ellipse cover, #177b9f 0%, #175772 100%); /* FF3.6-15 */
+    background: -webkit-radial-gradient(center, ellipse cover, #177b9f 0%,#175772 100%); /* Chrome10-25,Safari5.1-6 */
+    background: radial-gradient(ellipse at center, #177b9f 0%,#175772 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#177b9f', endColorstr='#175772',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+html, body, #root, .App, .container, main{
+  height: 100%;
+}
+
+body,
+.pure-g [class*=pure-u] {
+  font-family: 'Barlow', sans-serif;
+  color: #eceeef;
+  height: 100%;
+}
+
+.container {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 72px 30px 30px 30px;
+}
+
+
+
+h1{
+  color: #eceeef;
+}
+
+h2, h3 {
+  font-family: 'Michroma', 'Arial Narrow', sans-serif;
+  color: #103A52;
+  border-bottom: solid 1px;
+  margin: 0;
+  line-height: 2em;
+}
+
+.table-100{
+  width: 100%
+}
+
+.currency-box{
+  float: right;
+  color: #129c17;
+}
+
+
+hr{
+  border-color: #103A52;
+  border-width: 0;
+  border-bottom-width: 1px;
+}
+
+.pad-box{
+  padding: 0 1em;
+  box-sizing: border-box;
+}
+
+
+.pad-box > p > span,
+.pad-box > form > fieldset > p > span {
+  float: right;
+  color: white;
+}
+
+
+.game-panel{
+  padding: 1em;
+  border: 1px solid white;
+  overflow: scroll;
+}
+
+/*LEGIT*/
+.icon-holder{
+  width: 55px;
+  float: left;
+  margin-right: 1em;
+}
+.icon-holder .icon{
+  width: 55px;
+  height: 55px;
+  border-radius: 20%;
+  float: left;
+  background-size: 55px 55px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.logo-holder{
+  height: 48px;
+  float: left;
+  margin-right: -2em;
+  margin-left: -2.5em;
+  overflow: hidden;
+}
+.logo-holder .logo{
+  width: 120px;
+  height: 24px;
+  float: left;
+  background-size: 35px 35px;
+  -webkit-transform: rotateZ(35deg);
+  -ms-transform: rotate(35deg);
+  transform: rotateZ(60deg);
+}
+
+
+.feed-title{
+  font-size: 1.5em;
+  height: 65px;
+}
+.feed-title small{
+  text-transform: uppercase;
+  color: #949494;
+  font-size: small;
+  display: block;
+}
+
+.time-block{
+  text-align: right;
+  float: right;
+  padding-right: 0.75em;
+  padding-top: 0.75em;
+  color: #3799ca;
+  font-size: small;
+}
+.feed-description{
+  padding: 0 1em 0 1.75em;
+}
+/*LEGIT*/
+
+
+.modal-title-container{
+  padding: 1em;
+  background-color: #103A52;
+}
+.modal-body-container{
+  background-color: #17799c;
+}
+
+/*COMPOSE*/
+.compose-container {
+  min-width: 320px;
+}
+.compose-title-container{
+  padding-bottom: 0.3em;
+  background-color: #103A52;
+}
+.compose-title-container .title{
+  color: white;
+}
+
+.compose-editor-container > input{
+  color: #222222;
+}
+
+/*Confirmation modal */
+.confirm-container{
+  min-width: 320px;
+  background-color: #175772;
+}
+
+.confirm-title-container{
+  background-color: #103A52;
+  padding: 1em;
+}
+
+.confirm-body-container{
+  padding: 0 1em 1em 1em;
+}
+
+
+
+
+
+/*Confirmation modal */
+
+
+.editor-input{
+  margin-bottom: 0.4em;
+  background-color: #f3f3f3;
+  border: dashed 1px #103A52;
+  min-height: 80px;
+  border-radius: 5px;
+  color: #222222;
+}
+
+.fixed-compose-button{
+  position: fixed;
+  top: 9%;
+  right: 0;
+}
+
+.open-compose-button-container{
+  margin: 1em 0;
+  text-align: right;
+}
+
+/*Buttons*/
+a.pure-button-primary,
+.pure-button-primary {
+  background-color: #FF5934;
+}
+a.pure-button-primary:hover,
+.pure-button-primary:hover {
+  background-color: #FF5934;
+}
+
+a.pure-link-primary{
+  color: #DDDDDD;
+}
+a.pure-link-primary:visited{
+  color: #FF5934;
+}
+
+.pure-button-success {
+  color: white;
+  background-color: #FF5934;
+}
+.pure-button-success:hover {
+  background-color: #FF5934;
+}
+
+/*#01ca4c*/
+
+.pure-table{
+  border: none;
+}
+
+.pure-table > thead {
+  background: inherit;
+  color: inherit;
+  text-transform: uppercase;
+  font-size: small;
+  text-align: center;
+}
+
+.pure-table > tbody{
+  text-align: center;
+}
+
+.pure-table-horizontal td,
+.pure-table-horizontal th {
+  border-bottom: 1px solid #103A52;
+}
+
+.pure-form{
+  padding: 0 1em 1em 1em;
+
+}
+
+form > p {
+  margin-top: 0.5em;
+  margin-bottom: 0.2em;
+}
+
+
+.pure-form input[type="text"]:focus {
+  border-color: #0c1a2b;
+}
+
+.pure-form input{
+  /*width: 100%;*/
+  margin-bottom: 1em;
+  border-color: #175872;
+  background-color: #175872;
+  box-shadow: none;
+}
+
+.pure-form label{
+  font-family: 'Barlow', 'Arial Narrow', sans-serif;
+  text-transform: uppercase;
+  font-size: smaller;
+  margin-top: 0.8em;
+  margin-bottom: 0.4em;
+  display: block;
+}
+
+/*Copied from http://tobiasahlin.com/spinkit/*/
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 40px auto;
+  background-color: #ffffff;
+
+  border-radius: 100%;
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+/* NAVBAR */
+
+.navbar {
+  position: fixed;
+  padding: 5px;
+  background: #103A52;
+  font-family: 'Michroma', 'Arial Narrow', sans-serif;
+}
+
+.navbar a {
+  color: #fff;
+}
+
+.navbar a:active,
+.navbar a:focus,
+.navbar a:hover {
+  /*background: #F7BF5C;*/
+}
+
+nav.navbar.pure-menu.pure-menu-horizontal{
+  padding: 0
+}
+
+a.pure-menu-link{
+  padding: 0.75em 1em;
+  font-size: 14px;
+}
+
+ul.pure-menu-list.navbar-right {
+    margin-right: 1em;
+}
+
+.pure-menu-active>.pure-menu-link, .pure-menu-link:focus, .pure-menu-link:hover{
+  background: inherit;
+}
+
+.navbar .pure-menu-heading {
+  font-weight: bold;
+  text-transform: none;
+}
+
+.navbar .navbar-right {
+  float: right;
+}
+
+.twitter-menu-link{
+  margin-right: 1em;
+}
+
+/* HOME */
+.logo{
+  max-width: 100%;
+  max-height: 10em;
+}
+
+.profile-logo{
+  max-height: 160px;
+  max-width: 160px;
+  border: 2px solid #103A52;
+}
+
+.priceTrendArrow{
+  width: 1em;
+}
+
+
+/**/
+.pure-button .uport-logo {
+  height: 16px;
+
+}
+
+.token-detail{
+  min-width: 320px;
+  max-width: 640px;
+
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#177b9f+0,175772+100 */
+  background: #177b9f; /* Old browsers */
+  background: -moz-linear-gradient(top, #177b9f 0%, #175772 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #177b9f 0%,#175772 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #177b9f 0%,#175772 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#177b9f', endColorstr='#175772',GradientType=0 ); /* IE6-9 */
+
+}
+
+
+.account-details{
+  padding: 1em;
+}
+
+.account-details > p {
+  margin: 0.4em 0;
+  font-size: smaller;
+}
+
+.feedItem {
+  margin-bottom: 1em;
+  border: solid 1px #23536b;
+  text-align: left;
+  background: #103A52;
+
+}
+
+.feedItem .profile-logo{
+  max-height: 60px;
+  border-bottom: 1px solid gray;
+  border-right: 1px solid gray;
+  border-top: none;
+  border-left: none;
+}
+
+.feedItem .content-container{
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 1em;
+}
+
+.feedItem .content-container h3{
+  margin-top: 0;
+}
+
+.feedItem .profile-container {
+
+}
+
+.feedItem .button-container {
+  text-align: right;
+  margin-bottom: 0.5em;
+  margin-right: 0.5em;
+}
+
+.feedItem .button-container button{
+  margin-left: 0.5em;
+}
+
+/* --- TABS --- */
+.react-tabs__tab-list {
+  border-bottom: 2px solid #0f3b52;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.react-tabs__tab {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-bottom: none;
+  bottom: -1px;
+  position: relative;
+  list-style: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: 'Barlow', 'Arial Narrow', sans-serif;
+}
+
+.react-tabs__tab--selected {
+
+  background-color: #bdbdbd;
+  border-color: #959696;
+  border-radius: 2px 2px 0 0;
+}
+
+.react-tabs__tab:focus {
+  box-shadow: none;
+  border-color: none;
+  outline: none;
+}
+.react-tabs__tab:focus:after {
+  content: "";
+  position: absolute;
+  height: 5px;
+  left: -4px;
+  right: -4px;
+  bottom: -5px;
+  background: inherit;
+}
+
+.react-tabs__tab-panel {
+  display: none;
+}
+
+.react-tabs__tab-panel--selected {
+  display: block;
+}
+
+.react-tabs__tab--disabled {
+  color: gray;
+  cursor: default;
+}
+
+.react-tabs__tab:focus {
+  box-shadow: 0 0 5px hsl(208, 99%, 50%);
+  border-color: hsl(208, 99%, 50%);
+  outline: none;
+}
+
+.react-tabs__tab:focus:after {
+  content: "";
+  position: absolute;
+  height: 5px;
+  left: -4px;
+  right: -4px;
+  bottom: -5px;
+  background: #fff;
+}
+
+/*MODAL*/
+.ReactModal__Content.ReactModal__Content--after-open{
+  margin-right: 40%;
+  max-height: 600px;
+}
+
+.profile-menu-link{
+  height: 17px;
+  margin-top: 5px;
+}
+
+.purchase-total{
+  border-top: solid 1px #c9c9ca;
+  padding-top: 8px;
+}
+
+.title-button{
+  margin-left: 1em;
+}
+
+.contractList{
+  list-style: none;
+  padding: 0;
+}
+
+.contract-item-container{
+  padding: 1em;
+  background: #eceeef;
+  color: #222222;
+}
+
+.contractList li {
+  margin-bottom: 1em;
+}
+.contractList li a{
+  text-decoration: none;
+  color: white;
+}
+.contractList .text-holder{
+  padding: 0 1em;
+}
+
+.contractOptions {
+  display: flex;
+
+  font-family: 'Barlow', 'Arial Narrow', sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: smaller;
+
+}
+.contractOptions div {
+  flex: 1 1 auto;
+}
+.contractOptions div div{
+  margin-top: .3em;
+}
+
+.accountNavText{
+  font-size: 14px;
+  color: #ffffff;
+  padding: 0.75em 1em;
+}
+
+
+/*contract list*/
+.tile-outer{
+  box-sizing: border-box;
+  padding: 1em;
+}
+
+.tile-outer a {
+  text-decoration: none;
+}
+.tile-outer h3 {
+  border: none;
+}
+
+
+.tile-inner{
+  min-height: 200px;
+  border: 1px solid white;
+  padding: 1em;
+}
+
+.tile-inner h3{
+  color: white;
+  text-decoration: none;
+}
