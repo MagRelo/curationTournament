@@ -26,16 +26,16 @@ var getOne = function (req, res) {
 
 module.exports = function(app) {
 
+  // client config
   app.get('/api/config', (req, res)=> {
-    const factoryAddress = process.env.FACTORY_ADDRESS || '0x345ca3e014aaf5dca488057592ee47305d9b3e10'
-    res.json({deployedFactoryAddress: factoryAddress})
+    res.json({test: 'test'})
   });
 
   // Game
   app.get('/api/list', gameController.listGames)
   app.post('/api/game', gameController.createGame)
 
-  // *ANALYTICS*
+  // Analytics (not in use)
   app.post('/api/analytics/send', analyticsController.sendEvent);
 
   // All undefined asset or api routes should return a 404
