@@ -63,7 +63,7 @@ class AddProposal extends React.Component {
               onClick={() => {this.props.submitProposal(this.state.proposalTarget,this.state.proposalAction)}}>Submit</button>
             <button
               className="pure-button"
-              onClick={() => { this.props.submitProposal(null, 'pass')}}>Pass</button>
+              onClick={() => { this.props.submitProposal({symbol: 'pass'}, 'pass')}}>Pass</button>
           </div>
 
         </div>
@@ -71,7 +71,5 @@ class AddProposal extends React.Component {
 
   )}
 }
-
-// onClick={() => this.props.submitProposal({proposalAction: this.state.proposalAction})}>Submit</button>
 
 export default AddProposal

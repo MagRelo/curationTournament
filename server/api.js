@@ -1,28 +1,8 @@
 /**
  * Main application routes
  */
-const authController = require('./controllers/auth')
-const userController = require('./controllers/user')
 const gameController = require('./controllers/game')
 const analyticsController = require('./controllers/analytics')
-
-const passport = require('passport')
-const jwt = require('jsonwebtoken')
-const expressJwt = require('express-jwt')
-var path = require('path');
-//setup configuration for twitter login
-var passportConfig = require('./config/passport');
-passportConfig();
-
-var getOne = function (req, res) {
-  var user = req.user.toObject();
-
-  delete user['twitterProvider'];
-  delete user['__v'];
-
-  res.json(user);
-};
-
 
 module.exports = function(app) {
 

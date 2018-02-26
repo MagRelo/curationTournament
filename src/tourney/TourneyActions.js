@@ -49,8 +49,7 @@ export function createTournament(rounds){
       // dispatch(configUpdated(results))
     })
     .catch(error => {
-    console.error('action error', error)
-    return
+      console.error('action error', error)
     })
 
   }
@@ -72,6 +71,7 @@ export function listTournaments(){
 
   }
 }
+
 export function getUser(gameId){
   return function(dispatch){
 

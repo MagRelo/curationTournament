@@ -1,11 +1,9 @@
 'use strict';
-var stream = require('getstream-node');
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 const moment = require('moment')
-
-// var StreamMongoose = stream.mongoose;
+const sigUtil = require('eth-sig-util')
 
 var GameSchema = new Schema({
   config: {
@@ -32,47 +30,35 @@ var GameSchema = new Schema({
   candidateList: [],
   itemList: [],
   rounds: [{
-    meta: {
-      index: Number,
-      roundNumber: Number,
-      proposalsClosed: Boolean,
-      votesClosed: Boolean
-    },
-    proposals: [],
-    votes: [],
-    results: {}
+    index: Number,
+    roundNumber: Number,
+    proposalsClosed: Boolean,
+    votesClosed: Boolean
   }],
-  public: {
-    status: {},
-    itemList: [],
-    candidateList: [],
-    playerList: [],
-    rounds: []
-  }
+  predictions: []
 });
 
 
-GameSchema.methods.addProposal = function(userId, data){
+GameSchema.methods.addProposal = function(data){
 
-  const roundData = this.rounds[this.status.currentRound]
-  const existingProposalIndex = roundData.proposals.findIndex(proposal => {return proposal.symbol === data.proposalTarget.symbol})
-  if (existingProposalIndex > -1 ) {
-    roundData.proposals[proposalIndex] = {
-      //  merge in userId
-      users: [userId, ...roundData.proposals[proposalIndex].users],
-      round: currentRound,
-      action: data.proposalAction,
-      target: data.proposalTarget
-    }
-  } else {
-    roundData.proposals.push({
-      users: [userId],
-      round: currentRound,
-      action: data.proposalAction,
-      target: data.proposalTarget
-    })
+  // TODO check address against whitelist
+  if(!data.userAddress){
+    throw {error: 'bad user'}
   }
-  this.rounds[currentRound] = roundData
+
+  // validate signature
+  if(!validProposalSignature(data.userAddress, data.proposalAction, data.proposalTarget, data.signature)){
+    throw {error: 'bad signature'}
+  }
+
+  // validate round
+  if(data.currentRound !== this.status.currentRound ||
+    this.rounds[this.status.currentRound].meta.proposalsClosed){
+    throw {error: 'wrong round/proposals closed'}
+  }
+
+  // add proposal
+  this.predictions.push(data)
 
   return this.save()
 }
@@ -109,7 +95,7 @@ GameSchema.statics.updateAndFetch = function(gameId) {
 
       // STATUS
       if(gameDoc.status.gameInProgress){
-        gameDoc.status = updateStatus(gameDoc.status, gameDoc.config)
+        // gameDoc.status = updateStatus(gameDoc.status, gameDoc.config)
       }
 
       // ROUNDS
@@ -125,24 +111,12 @@ GameSchema.statics.updateAndFetch = function(gameId) {
       gameDoc.public.itemList = gameDoc.itemList
       gameDoc.public.candidateList = gameDoc.candidateList
       gameDoc.public.playerList = gameDoc.playerList
-      gameDoc.public.rounds = gameDoc.rounds.map(round => {
-
-        // proposals: remove player info
-        round.proposals = round.proposals
-          .filter(proposal => proposal.action !== 'pass')
-          .map(proposal => {
-            delete proposal.userId
-            return proposal
-          })
-
-        round.votes = round.votes
-          .filter(proposal => proposal.action !== 'pass')
-          .map(proposal => {
-            delete proposal.userId
-            return proposal
-          })
-
-        return round
+      gameDoc.public.rounds = gameDoc.rounds
+      gameDoc.publc.proposals = gameDoc.predictions.map(proposal => {
+        return {
+          userAddress: proposal.userAddress,
+          submitted: !!proposal.action
+        }
       })
 
       return gameDoc.save()
@@ -155,35 +129,11 @@ GameSchema.statics.updateAndFetch = function(gameId) {
 
 
 
-// GetStream integration
-// GameSchema.plugin(stream.mongoose.activity);
 module.exports = mongoose.model('Game', GameSchema);
 
-function buildRounds(config){
-
-  let rounds = []
-  const numberOfRounds = config.rounds
-
-  // build rounds
-  while (rounds.length < rounds, index){
-    rounds.push({
-      meta: {
-        index: index,
-        roundNumber: index + 1,
-        startTime: null
-      },
-      proposals: [],
-      votes: [],
-      results: {
-        proposalVotes: [],
-        playerList: [],
-      }
-    })
-  }
-
-  return rounds
-}
-
+// Helpers
+// --------------
+//
 function updateStatus(currentStatus, config){
   const phaseStart = moment(currentStatus.phaseStartTime)
   const secondsElapsed = moment().diff(phaseStart, 'seconds')
@@ -241,4 +191,22 @@ function transitionStatus(currentStatus, lengthOfPhase){
     "timeRemaining" : lengthOfPhase,
     "gameInProgress": true
   }
+}
+
+
+function validProposalSignature(userAddress, action, target, signature){
+
+  const msgParams = [{
+    name: 'Proposal',
+    type: 'string',
+    value: action + ' ' + target.symbol
+  }]
+  const recoveredAddress = sigUtil.recoverTypedSignature({
+    data: msgParams,
+    sig: signature
+  })
+
+  // if it matches then we have a valid sig.
+  return (recoveredAddress === userAddress)
+
 }

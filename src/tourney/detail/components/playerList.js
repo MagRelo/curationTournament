@@ -6,7 +6,7 @@ function round(value, places){
 }
 
 function tokenShare(chipCount, players){
-  let chipTotal = players.reduce((count, player) => { return count + player.chipCount }, 0)
+  let chipTotal = players.reduce((count, player) => { return count + player.chips }, 0)
   return round(100 * (chipCount / chipTotal), 2) + '%'
 }
 
@@ -29,10 +29,10 @@ const playerList = (props) => {
           <tbody>
 
             {playerList.map( player =>{
-              return <tr key={player.hash}>
-                  <td>{player.name}</td>
-                  <td>{player.chipCount}</td>
-                  <td>{tokenShare(player.chipCount, playerList)}</td>
+              return <tr key={player.userAddress}>
+                  <td>{player.userAddress.substring(0, 8)}...</td>
+                  <td>{player.chips}</td>
+                  <td>{tokenShare(player.chips, playerList)}</td>
               </tr>
             })}
 

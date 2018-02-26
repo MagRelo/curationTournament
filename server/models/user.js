@@ -1,6 +1,5 @@
 'use strict';
 
-var pricingFunctions = require('../config/pricing')
 var utils = require('../config/utils')
 
 var mongoose = require('mongoose'),

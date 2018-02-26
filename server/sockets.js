@@ -59,12 +59,11 @@ exports.startIo = function startIo(server){
   io = io.listen(server);
 
   var game = io.of('/game');
-  game.use(gameAuth);
+  // game.use(gameAuth);
   game.on('connection', (socket) => {
 
     // events
     socket.on('update', data => {GameController.handleUpdate(game, socket, data)})
-    // socket.on('update', data => {GameController.handleReady(game, socket, data)})
     socket.on('proposal', data => {GameController.handlePropsal(game, socket, data)})
     socket.on('vote', data => {GameController.handleVote(game, socket, data)})
 

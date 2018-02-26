@@ -2,7 +2,9 @@ import { connect } from 'react-redux'
 import tokenDetailComponent from './tourneyDetailComponent'
 
 const mapStateToProps = (state, ownProps) => {
-  return {}
+  return {
+    web3: state.web3
+  }
 }
 
 const mapDispatchToProps = (dispatch) => {

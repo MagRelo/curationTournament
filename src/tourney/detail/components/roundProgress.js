@@ -1,40 +1,30 @@
 import React from 'react'
 
-const addProposal = (props) => {
-  const {roundList} = props
+const roundProgress = (props) => {
+  const {roundList, timeRemaining} = props
 
   return(
     <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
 
       <div style={{flex: '1'}}>
         <h2>Rounds</h2>
+        <time>{timeRemaining}</time>
       </div>
-
       <div style={{flex: 5}}>
-        <table className="pure-table pure-table-horizontal table-100">
-          <thead>
-            <tr>
-              {roundList.map(round =>{
-                return <td colSpan="2" key={round.meta.index}> Round {round.meta.roundNumber}</td>
-              })}
-            </tr>
-            <tr>
-              {roundList.map(round =>{
-                return [<td>proposals</td>, <td>voting</td>]
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {roundList.map(round =>{
-                return [
-                  <td key={round.meta.index + 'a'}>{round.meta.proposalsClosed ? '✔' : '' }</td>,
-                  <td key={round.meta.index + 'b'}>{round.meta.votesClosed ? '✔' : '' }</td>
-                ]
-              })}
-            </tr>
-          </tbody>
-        </table>
+
+        <ul>
+          {roundList.map(round =>{
+            return <li colSpan="2" key={round.meta.index}> Round {round.meta.roundNumber}
+              <ul>
+                <li key={round.meta.index + 'a'}>Proposals {round.meta.proposalsClosed ? '✔' : '' }</li>
+                <li key={round.meta.index + 'b'}>Voting {round.meta.votesClosed ? '✔' : '' }</li>
+              </ul>
+
+            </li>
+          })}
+        </ul>
+
+
       </div>
 
     </div>
@@ -43,4 +33,4 @@ const addProposal = (props) => {
 
 }
 
-export default addProposal
+export default roundProgress

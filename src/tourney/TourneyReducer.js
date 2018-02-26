@@ -1,13 +1,6 @@
 const initialState = {
   user: {},
-  list: [],
-  status: {},
-  timeRemaining: 0,
-  rounds: [],
-  items: [],
-  playerList: [],
-  candidateList: [],
-  proposalList: []
+  list: []
 }
 
 const tournamentReducer = (state = initialState, action) => {
@@ -34,9 +27,3 @@ const tournamentReducer = (state = initialState, action) => {
 }
 
 export default tournamentReducer
-
-
-function filterCandidates(baseArray, removeArray){
-  const idArray = removeArray.map(item => item.symbol)
-  return baseArray.filter(baseItem => !~idArray.indexOf(baseItem.symbol))
-}
