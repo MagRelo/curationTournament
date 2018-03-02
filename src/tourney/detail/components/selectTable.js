@@ -17,16 +17,16 @@ class selectTable extends React.Component {
                   <tr>
                     <td>Name</td>
                     <td>Price</td>
-                    <td>Change(7d)</td>
+                    <td>Change&nbsp;(7d)</td>
                   </tr>
                 </thead>
                 <tbody>
 
-                  {this.props.items.map( item =>{
+                  {this.props.items.map((item, index) =>{
                     if(!item){ return null }
 
                     return <tr key={item.symbol}
-                      onClick={()=>{this.props.selectRow(item, this.props.action)}}
+                      onClick={()=>{this.props.selectRow(index)}}
                       style={{color: item.symbol === this.props.selectedItem.symbol ? 'orange': ''}}>
                         <td> {item.name} ({item.symbol}) </td>
                         <td> $ {item['price_usd']} </td>

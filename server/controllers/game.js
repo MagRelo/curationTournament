@@ -1,9 +1,10 @@
 const fetch = require('request-promise')
 const moment = require('moment')
+const sigUtil = require('eth-sig-util')
 
 const config = require('../config/environment')
 
-
+const VoteModel = require('../models/vote')
 const PredictionModel = require('../models/prediction')
 const GameSchema = require('../models/game')
 
@@ -45,25 +46,69 @@ exports.handleUpdate = (game, socket, data) => {
 
 exports.handlePropsal = (game, socket, data) => {
 
-
   let proposal
 
   GameSchema.findById(data.gameId)
     .then(gameDoc => {
       if(!gameDoc){throw {error: 'no game'}}
 
-      // validate user
-      if(!data.userAddress || !playerOnList(data.userAddress, gameDoc.playerList)){
+      // {
+      //     gameId: {type: Schema.Types.ObjectId, ref: 'Game'},
+      //     round: Number,
+      //     userAddress: String,
+      //     signature: String,
+      //     target: Object,
+      //     action: String,
+      //     outcome: Boolean,
+      //     votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}]
+      //   }
+
+      // setup signature data
+      const msgParams = [
+        {
+          name: 'Description',
+          type: 'string',
+          value: data.descriptionString
+        },
+        {
+          name: 'gameID',
+          type: 'string',
+          value: data.gameID
+        },
+        {
+          name: 'Round',
+          type: 'uint',
+          value: data.round
+        },
+        {
+          name: 'Action',
+          type: 'string',
+          value: data.gameID
+        },
+        {
+          name: 'Target',
+          type: 'string',
+          value: data.target.symbol
+        }
+      ]
+
+      // recover account that signed signature
+      userAddress = sigUtil.recoverTypedSignature({
+        data: msgParams,
+        sig: data.signature
+      })
+
+      // validate account against whitelist
+      if(!userAddress || !playerOnList(userAddress, gameDoc.playerList)){
         throw {error: 'bad user'}
       }
 
       // validate round
-      if(data.currentRound !== gameDoc.status.currentRound ||
-        gameDoc.rounds[gameDoc.status.currentRound].proposalsClosed){
+      if(gameDoc.rounds[gameDoc.status.currentRound].proposalsClosed){
         throw {error: 'wrong round/proposals closed'}
       }
 
-      return PredictionModel.addProposal(data)
+      return PredictionModel.addProposal(userAddress, data)
     })
     .then(temp_proposal => {
 
@@ -92,40 +137,69 @@ exports.handlePropsal = (game, socket, data) => {
       console.log(error)
       return Promise.resolve(game.emit('error', error))
     })
+
 }
 
 exports.handleVote = (game, socket, data) => {
 
-  GameSchema.findById(socket.gameId).lean()
-    .then(gameDoc => {
+    let userAddress = ''
 
-      if(!gameDoc){throw {error: 'no game'}}
-      const currentRound = gameDoc.status.currentRound
+    GameSchema.findById(data.gameId)
+      .then(gameDoc => {
+        if(!gameDoc){throw {error: 'no game'}}
 
-      // validate round
-      if(data.round !== currentRound){
-        console.log('wrong round', data.round, currentRound)
-        throw {error: 'wrong round'}
-      }
+        // setup signature data
+        const msgParams = [
+          {
+            name: 'Description',
+            type: 'string',
+            value: data.descriptionString
+          },
+          {
+            name: 'proposalID',
+            type: 'string',
+            value: data.proposalID
+          },
+          {
+            name: 'Vote',
+            type: 'uint',
+            value: data.vote
+          },
+        ]
 
-      // TODO validate action: get from internal array
-      // TODO validate target: get from internal array
-      if(!validSignature(userAddress, action, target, signature)){
-        throw 'bad signature'
-      }
+        // recover account that signed signature
+        userAddress = sigUtil.recoverTypedSignature({
+          data: msgParams,
+          sig: data.signature
+        })
 
-      return Game.addProposal(data.userId, data)
-    })
-    .then(updatedGame => {
-      return Game.updateAndFetch(socket.gameId)
-    })
-    .then(updatedGame => {
-      return Promise.resolve(game.emit('update', updatedGame))
-    })
-    .catch(error => {
-      console.log(error)
-      return Promise.resolve(game.emit('error', error))
-    })
+        // validate account against whitelist
+        if(!userAddress || !playerOnList(userAddress, gameDoc.playerList)){
+          throw {error: 'bad user'}
+        }
+
+        // validate round
+        if(gameDoc.rounds[gameDoc.status.currentRound].votesClosed){
+          throw {error: 'wrong round/voting closed'}
+        }
+
+        return PredictionModel.findById(data.proposalID)
+      })
+      .then(prediction => {
+        return VoteModel.addVote(userAddress, data)
+      })
+      .then(updatedGame => {
+        return Game.updateAndFetch(data.gameId)
+      })
+      .then(updatedGame => {
+        return Promise.resolve(game.emit('update', updatedGame))
+      })
+      .catch(error => {
+        console.log(error)
+        return Promise.resolve(game.emit('error', error))
+      })
+
+
 }
 
 function buildRounds(roundsCount, playerList){
@@ -144,7 +218,6 @@ function buildRounds(roundsCount, playerList){
 
   return rounds
 }
-
 function playerOnList(userAddress, playerList){
   return playerList.some(player => {
     return player.userAddress.toLowerCase() === userAddress.toLowerCase()

@@ -21,22 +21,17 @@ var PredictionSchema = new Schema({
 );
 
 
-PredictionSchema.statics.addProposal = function(data){
-
-  // validate signature
-  if(!validProposalSignature(data.userAddress, data.action, data.target, data.signature)){
-    throw {error: 'bad signature'}
-  }
+PredictionSchema.statics.addProposal = function(userAddress, data){
 
   // insert prediction and add to game
   return this.findOneAndUpdate(
     {
-      userAddress: data.userAddress,
+      userAddress: userAddress,
       gameId: data.gameId,
       round: data.currentRound
     },
     {
-      userAddress: data.userAddress,
+      userAddress: userAddress,
       gameId: data.gameId,
       round: data.currentRound,
       type: 'proposal',
@@ -80,21 +75,3 @@ PredictionSchema.statics.closeVotes = function(gameId, round) {
 
 
 module.exports = mongoose.model('Prediction', PredictionSchema);
-
-
-function validProposalSignature(userAddress, action, target, signature){
-
-  const msgParams = [{
-    name: 'Proposal',
-    type: 'string',
-    value: action + ' ' + target.symbol
-  }]
-  const recoveredAddress = sigUtil.recoverTypedSignature({
-    data: msgParams,
-    sig: signature
-  })
-
-  // if it matches then we have a valid sig.
-  return (recoveredAddress === userAddress)
-
-}

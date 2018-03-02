@@ -17,4 +17,26 @@ var VoteSchema = new Schema({
 );
 
 
+VoteSchema.statics.addVote = function(userAddress, data){
+
+  // insert prediction and add to game
+  return this.findOneAndUpdate(
+    {
+      userAddress: userAddress,
+      predictionId: data.predictionId
+    },
+    {
+      gameId: data.gameId,
+      predictionId: data.proposalID,
+      userAddress: userAddress,
+      signature: data.signature,
+      vote: data.vote,
+      outcome: null
+    },
+    {upsert: true, new: true}
+  )
+}
+
+
+
 module.exports = mongoose.model('Vote', VoteSchema);

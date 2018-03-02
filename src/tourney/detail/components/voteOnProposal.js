@@ -6,15 +6,17 @@ class voteOnProposal extends React.Component {
     super(props)
 
     this.state = {
-      voteTarget: {},
+      selectedProposal: {
+        target: {}
+      },
       vote: ''
     }
   }
 
-  selectItem(item, action){
+  selectItem(index){
     this.setState({
-      voteTarget: item,
-      proposalAction: action
+      proposalIndex: index,
+      selectedProposal: this.props.proposalList[index]
     })
   }
 
@@ -35,7 +37,7 @@ class voteOnProposal extends React.Component {
 
     // default
     return {}
-}
+  }
 
   render(){
       return(
@@ -51,9 +53,9 @@ class voteOnProposal extends React.Component {
 
                 <h3> Proposal </h3>
                 <SelectTable
-                  items={this.props.proposalList}
+                  items={this.props.proposalList.map(proposal => {return proposal.target})}
                   selectRow={this.selectItem.bind(this)}
-                  selectedItem={this.state.voteTarget}
+                  selectedItem={this.state.selectedProposal.target}
                   action=""/>
 
               </div>
@@ -62,7 +64,7 @@ class voteOnProposal extends React.Component {
                 <div style={{flex: 6}}>
                   <h3> Vote </h3>
                   <div>
-                    <p> {} {this.state.voteTarget.name}? </p>
+                    <p> {this.state.selectedProposal.action} {this.state.selectedProposal.target.name}? </p>
                   </div>
                 </div>
 
@@ -86,7 +88,7 @@ class voteOnProposal extends React.Component {
                 <div style={{flex: 1, textAlign: 'center'}}>
                   <button
                     className="pure-button pure-button-primary"
-                    onClick={() => {this.props.submitVote(this.state.voteTarget, this.state.selectedVote)}}> Submit </button>
+                    onClick={() => {this.props.submitVote(this.state.selectedProposal, this.state.selectedVote)}}> Submit </button>
                 </div>
 
               </div>

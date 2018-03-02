@@ -45,7 +45,7 @@ class FormComponent extends Component {
       items: [],
       playerList: [],
       candidateList: [],
-      proposalList: [],
+      predictions: [],
       rounds: [],
     }
   }
@@ -78,7 +78,6 @@ class FormComponent extends Component {
 
   // socket handlers
   updateGameData(data){
-    // const gameData = data.public
     const gameData = data
     console.log(gameData)
 
@@ -95,11 +94,14 @@ class FormComponent extends Component {
         items: gameData.itemList,
         playerList: gameData.playerList,
         candidateList: this.filterCandidates(gameData.candidateList, gameData.itemList),
-        proposalList: gameData.predictions
+        predictions: gameData.predictions.filter(prediction => {
+          return prediction.round === gameData.status.currentRound
+        })
+
       })
 
       // show counter display
-      this.startCountdown()
+      // this.startCountdown()
     }
 
     if(gameData.status.gameComplete){
@@ -125,11 +127,35 @@ class FormComponent extends Component {
     const userAddress = web3.eth.accounts[0]
     const gameId = this.props.params.tournamentId
     const currentRound = this.state.status.currentRound
-    const msgParams = [{
-      name: 'Proposal',
-      type: 'string',
-      value: proposalAction + ' ' + proposalTarget.symbol
-    }]
+
+    const descriptionString = 'Proposal: ' + proposalAction + ' ' + proposalTarget.symbol
+    const msgParams = [
+      {
+        name: 'Description',
+        type: 'string',
+        value: descriptionString
+      },
+      {
+        name: 'gameID',
+        type: 'string',
+        value: gameId
+      },
+      {
+        name: 'Round',
+        type: 'uint',
+        value: currentRound
+      },
+      {
+        name: 'Action',
+        type: 'string',
+        value: proposalAction
+      },
+      {
+        name: 'Target',
+        type: 'string',
+        value: data.target.symbol
+      }
+    ]
 
     web3.currentProvider.sendAsync({
         method: 'eth_signTypedData',
@@ -140,25 +166,68 @@ class FormComponent extends Component {
         if (result.error) { return console.error(result.error.message) }
 
         // send to server
-        gameSocket.emit('proposal', {
-          userAddress: userAddress,
+        gameSocket.emit('proposal', {          
           gameId: gameId,
-          currentRound: currentRound,
+          round: currentRound,
+          userAddress: userAddress,
+          signature: result.result,
           target: proposalTarget,
           action: proposalAction,
-          signature: result.result
+          descriptionString: descriptionString
         })
       })
 
   }
 
-  submitVote(voteTarget, vote){
-    console.log('Submit vote: ', proposalTarget.name);
-    gameSocket.emit('vote', {
-      round: this.status.currentRound,
-      target: voteTarget,
-      vote: vote,
-    })
+  submitVote(selectedProposal, vote){
+
+    console.log('Submit vote: ', selectedProposal.target.name)
+
+    const web3 = this.props.web3.web3Instance
+    const userAddress = web3.eth.accounts[0]
+    const gameId = this.props.params.tournamentId
+    const currentRound = this.state.status.currentRound
+
+    // setup signature data
+    const descriptionString = selectedProposal.action + ' ' + selectedProposal.target.name + ': ' + (vote ? 'Yes':'No')
+    const msgParams = [
+      {
+        name: 'Description',
+        type: 'string',
+        value: descriptionString
+      },
+      {
+        name: 'proposalID',
+        type: 'string',
+        value: selectedProposal._id
+      },
+      {
+        name: 'Vote',
+        type: 'uint',
+        value: vote
+      },
+  ]
+
+
+    web3.currentProvider.sendAsync({
+        method: 'eth_signTypedData',
+        params: [msgParams, userAddress],
+        from: userAddress,
+      }, function (err, result) {
+        if (err) return console.error(err)
+        if (result.error) { return console.error(result.error.message) }
+
+        // send to server
+        gameSocket.emit('vote', {
+          userAddress: userAddress,
+          gameId: gameId,
+          currentRound: currentRound,
+          descriptionString: descriptionString,
+          proposalID: selectedProposal._id,
+          vote: vote,
+          signature: result.result
+        })
+      })
 
   }
 
@@ -237,7 +306,7 @@ class FormComponent extends Component {
                 {this.state.status.currentPhase === 'votes' ?
 
                   <VoteOnProposal
-                    proposalList={this.state.proposalList}
+                    proposalList={this.state.predictions}
                     submitVote={this.submitVote.bind(this)}/>
 
                 :null}
