@@ -14,10 +14,10 @@ const roundProgress = (props) => {
 
         <ul>
           {roundList.map(round =>{
-            return <li colSpan="2" key={round.meta.index}> Round {round.meta.roundNumber}
+            return <li colSpan="2" key={round.index}> Round {round.roundNumber}
               <ul>
-                <li key={round.meta.index + 'a'}>Proposals {round.meta.proposalsClosed ? '✔' : '' }</li>
-                <li key={round.meta.index + 'b'}>Voting {round.meta.votesClosed ? '✔' : '' }</li>
+                <li key={round.index + 'a'}>Proposals {round.proposalsClosed ? '✔' : '' }</li>
+                <li key={round.index + 'b'}>Voting {round.votesClosed ? '✔' : '' }</li>
               </ul>
 
             </li>

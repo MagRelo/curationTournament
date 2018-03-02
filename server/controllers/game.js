@@ -4,7 +4,9 @@ const moment = require('moment')
 const config = require('../config/environment')
 
 
+const PredictionModel = require('../models/prediction')
 const GameSchema = require('../models/game')
+
 const Game = require('mongoose').model('Game')
 
 exports.createGame = (req, res) => {
@@ -25,23 +27,60 @@ exports.createGame = (req, res) => {
 exports.listGames = (req, res) => {
   GameSchema.find({'status.gameComplete': false})
     .then(gameDoc => { res.json(gameDoc) })
-    .catch(error => { res.status(500).json({error: error}) })
+    .catch(error => {
+      console.log(error.message);
+      res.status(500).json({error: error})
+    })
 
 }
 
 exports.handleUpdate = (game, socket, data) => {
   Game.updateAndFetch(data.gameId)
     .then(gameDoc => Promise.resolve(game.emit('update', gameDoc)) )
-    .catch(error => Promise.resolve(game.emit('error', error)))
+    .catch(error => {
+      console.log(error)
+      return Promise.resolve(game.emit('error', error))
+    })
 }
 
 exports.handlePropsal = (game, socket, data) => {
+
+
+  let proposal
 
   GameSchema.findById(data.gameId)
     .then(gameDoc => {
       if(!gameDoc){throw {error: 'no game'}}
 
-      return gameDoc.addProposal(data)
+      // validate user
+      if(!data.userAddress || !playerOnList(data.userAddress, gameDoc.playerList)){
+        throw {error: 'bad user'}
+      }
+
+      // validate round
+      if(data.currentRound !== gameDoc.status.currentRound ||
+        gameDoc.rounds[gameDoc.status.currentRound].proposalsClosed){
+        throw {error: 'wrong round/proposals closed'}
+      }
+
+      return PredictionModel.addProposal(data)
+    })
+    .then(temp_proposal => {
+
+      // save for later
+      proposal = temp_proposal
+
+      return GameSchema.findById(data.gameId)
+    })
+    .then(gameDoc =>{
+
+      // add prediction to game
+      if(!~gameDoc.predictions.indexOf(proposal._id)){
+        gameDoc.predictions.push(proposal._id)
+      }
+
+      // save game
+      return gameDoc.save()
     })
     .then(updatedGame => {
       return Game.updateAndFetch(data.gameId)
@@ -89,31 +128,28 @@ exports.handleVote = (game, socket, data) => {
     })
 }
 
-function buildRounds(roundsCount, playerObject){
+function buildRounds(roundsCount, playerList){
 
   let rounds = []
 
   // build rounds
   for(let i=0; i < roundsCount; i++){
     rounds.push({
-      meta: {
-        index: i,
-        roundNumber: i + 1,
-        startTime: null
-      },
-      proposals: playerObject,
-      votes: [],
-      results: {
-        proposalVotes: [],
-        playerList: [],
-      }
+      index: i,
+      roundNumber: i + 1,
+      proposalsClosed: false,
+      votesClosed: false
     })
   }
 
   return rounds
 }
 
-
+function playerOnList(userAddress, playerList){
+  return playerList.some(player => {
+    return player.userAddress.toLowerCase() === userAddress.toLowerCase()
+  })
+}
 const playerList = [
   { userAddress: '0x863afa452F38966b54Cb1149D934e34670D0683a', chips: 100 },
   { userAddress: '0x106F681949E222D57A175cD85685E3bD9975b973', chips: 100 },

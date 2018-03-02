@@ -8,11 +8,6 @@ let gameSocket
 // timer
 let intervalId = 0
 
-// import LoginButton from '../signin/signinContainer'
-// <LoginButton tournamentId={this.props.params.tournamentId}/>
-
-// import WrappedModal from '../confirmationModal'
-
 //
 import AddProposal from './components/addProposal'
 import VoteOnProposal from './components/voteOnProposal'
@@ -29,7 +24,7 @@ class FormComponent extends Component {
     // connect to game
     gameSocket = io('http://localhost:8080/game');
 
-    // gameSocket.on('error', this.socketError)
+    gameSocket.on('error', this.socketError)
     // gameSocket.on('disconnect', this.socketError)
     // gameSocket.on('connect_failed', this.socketError)
     // gameSocket.on('reconnect_failed', this.socketError)
@@ -83,7 +78,8 @@ class FormComponent extends Component {
 
   // socket handlers
   updateGameData(data){
-    const gameData = data.public
+    // const gameData = data.public
+    const gameData = data
     console.log(gameData)
 
     // check gameState
@@ -99,7 +95,7 @@ class FormComponent extends Component {
         items: gameData.itemList,
         playerList: gameData.playerList,
         candidateList: this.filterCandidates(gameData.candidateList, gameData.itemList),
-        proposalList: gameData.rounds[gameData.status.currentRound].proposals.map(proposal => proposal.target)
+        proposalList: gameData.predictions
       })
 
       // show counter display
@@ -116,7 +112,7 @@ class FormComponent extends Component {
 
   }
   socketError(data){
-    console.log('Reconnecting... Attempts:', data)
+    console.log('error', data)
   }
 
 
@@ -148,8 +144,8 @@ class FormComponent extends Component {
           userAddress: userAddress,
           gameId: gameId,
           currentRound: currentRound,
-          proposalTarget: proposalTarget,
-          proposalAction: proposalAction,
+          target: proposalTarget,
+          action: proposalAction,
           signature: result.result
         })
       })

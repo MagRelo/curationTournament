@@ -24,7 +24,8 @@ class ContractList extends Component {
             return <div className="pure-u-1 pure-u-md-1-3 tile-outer" key={game._id}>
                 <Link to={"/tourney/" + game._id}>
                   <div className="tile-inner">
-                    <h3> {game.status.tournamentStart} </h3>
+                    <p> phase: {game.status.currentPhase} </p>
+                    <p> start: {game.status.phaseStartTime} </p>
                   </div>
                 </Link>
               </div>
