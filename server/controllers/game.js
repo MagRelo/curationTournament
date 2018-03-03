@@ -36,7 +36,7 @@ exports.listGames = (req, res) => {
 }
 
 exports.handleUpdate = (game, socket, data) => {
-  Game.updateAndFetch(data.gameId)
+  Game.updateAndFetch(data.gameId, data.userAddress)
     .then(gameDoc => Promise.resolve(game.emit('update', gameDoc)) )
     .catch(error => {
       console.log(error)
@@ -46,22 +46,13 @@ exports.handleUpdate = (game, socket, data) => {
 
 exports.handlePropsal = (game, socket, data) => {
 
-  let proposal
+  let gameDoc, userAddress
 
   GameSchema.findById(data.gameId)
-    .then(gameDoc => {
-      if(!gameDoc){throw {error: 'no game'}}
+    .then(gameModel => {
+      if(!gameModel){throw {error: 'no game'}}
 
-      // {
-      //     gameId: {type: Schema.Types.ObjectId, ref: 'Game'},
-      //     round: Number,
-      //     userAddress: String,
-      //     signature: String,
-      //     target: Object,
-      //     action: String,
-      //     outcome: Boolean,
-      //     votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}]
-      //   }
+      gameDoc = gameModel
 
       // setup signature data
       const msgParams = [
@@ -73,7 +64,7 @@ exports.handlePropsal = (game, socket, data) => {
         {
           name: 'gameID',
           type: 'string',
-          value: data.gameID
+          value: data.gameId
         },
         {
           name: 'Round',
@@ -83,7 +74,7 @@ exports.handlePropsal = (game, socket, data) => {
         {
           name: 'Action',
           type: 'string',
-          value: data.gameID
+          value: data.action
         },
         {
           name: 'Target',
@@ -110,25 +101,18 @@ exports.handlePropsal = (game, socket, data) => {
 
       return PredictionModel.addProposal(userAddress, data)
     })
-    .then(temp_proposal => {
-
-      // save for later
-      proposal = temp_proposal
-
-      return GameSchema.findById(data.gameId)
-    })
-    .then(gameDoc =>{
+    .then(proposalDoc => {
 
       // add prediction to game
-      if(!~gameDoc.predictions.indexOf(proposal._id)){
-        gameDoc.predictions.push(proposal._id)
+      if(!~gameDoc.predictions.indexOf(proposalDoc._id)){
+        gameDoc.predictions.push(proposalDoc._id)
       }
 
       // save game
       return gameDoc.save()
     })
     .then(updatedGame => {
-      return Game.updateAndFetch(data.gameId)
+      return Game.updateAndFetch(data.gameId, userAddress)
     })
     .then(updatedGame => {
       return Promise.resolve(game.emit('update', updatedGame))
@@ -142,7 +126,7 @@ exports.handlePropsal = (game, socket, data) => {
 
 exports.handleVote = (game, socket, data) => {
 
-    let userAddress = ''
+  let predictionDoc, userAddress
 
     GameSchema.findById(data.gameId)
       .then(gameDoc => {
@@ -186,10 +170,22 @@ exports.handleVote = (game, socket, data) => {
         return PredictionModel.findById(data.proposalID)
       })
       .then(prediction => {
+        predictionDoc = prediction
+
         return VoteModel.addVote(userAddress, data)
       })
+      .then(voteResponse => {
+
+        // add vote to prediction
+        if(!~predictionDoc.votes.indexOf(voteResponse._id)){
+          predictionDoc.votes.push(voteResponse._id)
+        }
+
+        // save prediction
+        return predictionDoc.save()
+      })
       .then(updatedGame => {
-        return Game.updateAndFetch(data.gameId)
+        return Game.updateAndFetch(data.gameId, userAddress)
       })
       .then(updatedGame => {
         return Promise.resolve(game.emit('update', updatedGame))

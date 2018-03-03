@@ -42,20 +42,52 @@ var GameSchema =  new Schema({
 );
 
 
-GameSchema.statics.updateAndFetch = function(gameId) {
+GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
 
   return this.findOne({_id: gameId})
-      .populate({path: 'predictions', model: 'Prediction', select: 'round type action target'})
+      .populate({
+        path: 'predictions',
+        model: 'Prediction',
+        select: '_id action target round userAddress',
+        populate: {
+          path: 'votes',
+          model: 'Vote',
+          select: 'vote userAddress'
+        }
+      })
       .then(gameDoc => {
         if(!gameDoc){return console.log('no gameDoc!', gameId);}
 
         // check status
-        const playerCount = gameDoc.playerList.length
-        const round = gameDoc.status.currentRound
-        const phase = gameDoc.status.currentPhase
-        const roundPredictions = gameDoc.predictions
-          .filter(prediction => prediction.round === gameDoc.status.currentRound)
-          .length
+        // const playerCount = gameDoc.playerList.length
+        // const round = gameDoc.status.currentRound
+        // const phase = gameDoc.status.currentPhase
+        // const roundPredictions = gameDoc.predictions
+        //   .filter(prediction => prediction.round === gameDoc.status.currentRound)
+        //   .length
+
+
+        const userAddressCompare = userAddress ? userAddress.toLowerCase() : ''
+
+
+        // only include data for this user & round
+        const userProposals = gameDoc.predictions
+          .filter(prediction => {
+            return (prediction.userAddress === userAddressCompare &&
+              prediction.round === gameDoc.status.currentRound)
+          })
+
+        const userVotes = gameDoc.predictions
+          .map(prediction => {
+            return {
+              _id: prediction._id,
+              round: prediction.round,
+              vote: prediction.votes.filter(vote => {
+                return vote.userAddress === userAddressCompare
+              })
+            }
+          })
+
 
         // publicify data
         return {
@@ -64,7 +96,18 @@ GameSchema.statics.updateAndFetch = function(gameId) {
           candidateList: gameDoc.candidateList,
           playerList: gameDoc.playerList,
           rounds: gameDoc.rounds,
-          predictions: gameDoc.predictions
+          predictions: gameDoc.predictions.map(prediction => {
+            return {
+              _id: prediction._id,
+              round: prediction.round,
+              action: prediction.action,
+              target: prediction.target              
+            }
+          }),
+          userData: {
+            proposal: userProposals[0],
+            votes: userVotes
+          }
         }
       })
 

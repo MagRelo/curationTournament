@@ -21,19 +21,6 @@ class FormComponent extends Component {
   constructor(props) {
     super(props)
 
-    // connect to game
-    gameSocket = io('http://localhost:8080/game');
-
-    gameSocket.on('error', this.socketError)
-    // gameSocket.on('disconnect', this.socketError)
-    // gameSocket.on('connect_failed', this.socketError)
-    // gameSocket.on('reconnect_failed', this.socketError)
-    gameSocket.on('reconnecting', this.socketError)
-    gameSocket.on('connect', data =>{
-      console.log('Game connected, fetching data...')
-      gameSocket.emit('update', {gameId: this.props.params.tournamentId})
-    })
-    gameSocket.on('update', this.updateGameData.bind(this))
 
     this.state = {
       modalIsOpen: false,
@@ -63,6 +50,23 @@ class FormComponent extends Component {
     function watchForWeb3(){
       if(this.props.web3.web3Instance){
         console.log('web3 ready!');
+
+        // setup sockets here(?)
+
+        // connect to game
+        gameSocket = io('http://localhost:8080/game');
+
+        gameSocket.on('error', this.socketError)
+        // gameSocket.on('disconnect', this.socketError)
+        // gameSocket.on('connect_failed', this.socketError)
+        // gameSocket.on('reconnect_failed', this.socketError)
+        gameSocket.on('reconnecting', this.socketError)
+        gameSocket.on('connect', data =>{
+          console.log('Game connected, fetching data...')
+          gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
+        })
+        gameSocket.on('update', this.updateGameData.bind(this))
+
         this.setState({ready: true})
         clearInterval(intId);
       } else {
@@ -124,7 +128,7 @@ class FormComponent extends Component {
     console.log('Submit proposal: ', proposalAction)
 
     const web3 = this.props.web3.web3Instance
-    const userAddress = web3.eth.accounts[0]
+    const userAddress = this.props.userAddress
     const gameId = this.props.params.tournamentId
     const currentRound = this.state.status.currentRound
 
@@ -153,7 +157,7 @@ class FormComponent extends Component {
       {
         name: 'Target',
         type: 'string',
-        value: data.target.symbol
+        value: proposalTarget.symbol
       }
     ]
 
@@ -166,7 +170,7 @@ class FormComponent extends Component {
         if (result.error) { return console.error(result.error.message) }
 
         // send to server
-        gameSocket.emit('proposal', {          
+        gameSocket.emit('proposal', {
           gameId: gameId,
           round: currentRound,
           userAddress: userAddress,
@@ -175,8 +179,8 @@ class FormComponent extends Component {
           action: proposalAction,
           descriptionString: descriptionString
         })
-      })
 
+      })
   }
 
   submitVote(selectedProposal, vote){
@@ -184,7 +188,7 @@ class FormComponent extends Component {
     console.log('Submit vote: ', selectedProposal.target.name)
 
     const web3 = this.props.web3.web3Instance
-    const userAddress = web3.eth.accounts[0]
+    const userAddress = this.props.userAddress
     const gameId = this.props.params.tournamentId
     const currentRound = this.state.status.currentRound
 
@@ -281,12 +285,15 @@ class FormComponent extends Component {
           <div style={{flex: '1', display: 'flex', flexDirection: 'column'}}>
 
             <div className="game-panel" style={{flex: '2'}}>
+
               <RoundProgress roundList={this.state.rounds} timeRemaining={this.state.timeRemaining}/>
 
             </div>
-
             <div className="game-panel" style={{flex: '2'}}>
-              <PlayerList playerList={this.state.playerList}/>
+
+              <PlayerList
+                playerList={this.state.playerList}
+                currentAccount={this.props.userAddress || ''}/>
 
             </div>
 

@@ -8,7 +8,7 @@ const web3Reducer = (state = initialState, action) => {
   {
     return Object.assign({}, state, {
       web3Instance: action.payload.web3Instance,
-      accounts: action.payload.web3Instance.eth.accounts
+      account: action.payload.web3Instance.eth.accounts[0]
     })
   }
 

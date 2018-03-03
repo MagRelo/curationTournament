@@ -14,8 +14,9 @@ var PredictionSchema = new Schema({
     signature: String,
     target: Object,
     action: String,
+    votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}],
+    yesVotes: Number,
     outcome: Boolean,
-    votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}]
   },
   {timestamps: true}
 );
@@ -28,12 +29,12 @@ PredictionSchema.statics.addProposal = function(userAddress, data){
     {
       userAddress: userAddress,
       gameId: data.gameId,
-      round: data.currentRound
+      round: data.round
     },
     {
       userAddress: userAddress,
       gameId: data.gameId,
-      round: data.currentRound,
+      round: data.round,
       type: 'proposal',
       action: data.action,
       target: data.target,
@@ -44,31 +45,20 @@ PredictionSchema.statics.addProposal = function(userAddress, data){
   )
 }
 
-
-
-PredictionSchema.statics.closeVotes = function(gameId, round) {
+PredictionSchema.statics.tallyVote = function(predictionId) {
 
   // get predictions and w/ votes
-  return this.find({_id: gameId, round: round})
-    .populate({path: 'votes', model: 'Vote', select: 'round type action target'})
-    .then(predictions => {
+  return this.find({_id: predictionId})
+    .populate({path: 'votes', model: 'Vote', select: 'vote'})
+    .then(prediction => {
 
       // tally votes
-      const closedPredictions = predictions.map(prediction => {
-        prediction.outcome = prediction.votes.reduce((total, item) => {
-          return total + item.vote
-        }, 0)
-        return prediction
-      })
+      prediction.yesVotes = prediction.votes.reduce((total, item) => {
+        return total + item.vote
+      }, 0)
 
-      // update predictions array
-
-    })
-    .then(results => {
-      // get game again
-    })
-    .then(results => {
-      // order predctions
+      // save
+      return prediction.save()
     })
 
 };

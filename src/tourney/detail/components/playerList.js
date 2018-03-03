@@ -11,7 +11,7 @@ function tokenShare(chipCount, players){
 }
 
 const playerList = (props) => {
-  const {playerList} = props
+  const {playerList, currentAccount} = props
 
   return(
     <div>
@@ -22,16 +22,15 @@ const playerList = (props) => {
           <thead>
             <tr>
               <td>Name</td>
-              <td>Chips</td>
               <td>Share</td>
             </tr>
           </thead>
           <tbody>
 
             {playerList.map( player =>{
-              return <tr key={player.userAddress}>
-                  <td>{player.userAddress.substring(0, 8)}...</td>
-                  <td>{player.chips}</td>
+              return <tr key={player.userAddress}
+                style={{color: player.userAddress.toLowerCase() === currentAccount.toLowerCase() ? 'orange': ''}}>
+                  <td>{player.userAddress.substring(0, 12)}...</td>
                   <td>{tokenShare(player.chips, playerList)}</td>
               </tr>
             })}

@@ -11,11 +11,22 @@ class AddProposal extends React.Component {
     }
   }
 
-  selectItem(item, action){
+  selectItem(index, action){
     this.setState({
-      proposalTarget: item,
+      proposalTarget: this.props.candidateList[index],
       proposalAction: action
     })
+  }
+
+  submitProposal(target, action){
+
+    this.props.submitProposal(target, action)
+
+    this.setState({
+      proposalTarget: {},
+      proposalAction: ''
+    })
+
   }
 
   render () {
@@ -60,10 +71,11 @@ class AddProposal extends React.Component {
             <p>Proposal: {this.state.proposalAction} {this.state.proposalTarget.name}</p>
             <button
               className="pure-button pure-button-primary"
-              onClick={() => {this.props.submitProposal(this.state.proposalTarget,this.state.proposalAction)}}>Submit</button>
+              disabled={!this.state.proposalTarget || !this.state.proposalAction}
+              onClick={()=>{this.submitProposal(this.state.proposalTarget,this.state.proposalAction)}}>Submit</button>
             <button
               className="pure-button"
-              onClick={() => { this.props.submitProposal({symbol: 'pass'}, 'pass')}}>Pass</button>
+              onClick={()=>{this.submitProposal({symbol: ''}, 'pass')}}>Pass</button>
           </div>
 
         </div>

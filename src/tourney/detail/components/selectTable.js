@@ -26,7 +26,7 @@ class selectTable extends React.Component {
                     if(!item){ return null }
 
                     return <tr key={item.symbol}
-                      onClick={()=>{this.props.selectRow(index)}}
+                      onClick={()=>{this.props.selectRow(index, this.props.action)}}
                       style={{color: item.symbol === this.props.selectedItem.symbol ? 'orange': ''}}>
                         <td> {item.name} ({item.symbol}) </td>
                         <td> $ {item['price_usd']} </td>

@@ -9,7 +9,8 @@ class voteOnProposal extends React.Component {
       selectedProposal: {
         target: {}
       },
-      vote: ''
+      vote: '',
+      selectedVote: null,
     }
   }
 
@@ -20,8 +21,18 @@ class voteOnProposal extends React.Component {
     })
   }
 
-  toggleVote(event){
-    this.setState({vote: event.target.name})
+  submitVote(target, action){
+
+    this.props.submitVote(this.state.selectedProposal, this.state.selectedVote)
+
+    this.setState({
+      selectedProposal: {
+        target: {}
+      },
+      selectedVote: null,
+      vote: ''
+    })
+
   }
 
   answerYes(vote){
@@ -30,6 +41,7 @@ class voteOnProposal extends React.Component {
   answerNo(vote){
     this.setState({selectedVote: 0})
   }
+
   setVoteStyle(button){
     if(button === this.state.selectedVote){
       return {background: '#103A52'}
@@ -88,7 +100,8 @@ class voteOnProposal extends React.Component {
                 <div style={{flex: 1, textAlign: 'center'}}>
                   <button
                     className="pure-button pure-button-primary"
-                    onClick={() => {this.props.submitVote(this.state.selectedProposal, this.state.selectedVote)}}> Submit </button>
+                    disabled={!this.state.selectedProposal || this.state.selectedVote === null}
+                    onClick={() => {this.submitVote(this.state.selectedProposal, this.state.selectedVote)}}> Submit </button>
                 </div>
 
               </div>
