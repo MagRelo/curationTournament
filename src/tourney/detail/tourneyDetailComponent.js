@@ -100,7 +100,8 @@ class FormComponent extends Component {
         candidateList: this.filterCandidates(gameData.candidateList, gameData.itemList),
         predictions: gameData.predictions.filter(prediction => {
           return prediction.round === gameData.status.currentRound
-        })
+        }),
+        userData: gameData.userData
 
       })
 
@@ -132,17 +133,16 @@ class FormComponent extends Component {
     const gameId = this.props.params.tournamentId
     const currentRound = this.state.status.currentRound
 
-    const descriptionString = 'Proposal: ' + proposalAction + ' ' + proposalTarget.symbol
+    // setup signature data
+    const descriptionString = '\"' + proposalAction
+      + ' ' + proposalTarget.name
+      + (proposalAction === 'add' ? ' to' : ' from'  )
+      + ' list\"'
     const msgParams = [
       {
-        name: 'Description',
+        name: 'Proposal',
         type: 'string',
         value: descriptionString
-      },
-      {
-        name: 'gameID',
-        type: 'string',
-        value: gameId
       },
       {
         name: 'Round',
@@ -150,16 +150,12 @@ class FormComponent extends Component {
         value: currentRound
       },
       {
-        name: 'Action',
+        name: 'Game ID',
         type: 'string',
-        value: proposalAction
-      },
-      {
-        name: 'Target',
-        type: 'string',
-        value: proposalTarget.symbol
+        value: gameId
       }
     ]
+
 
     web3.currentProvider.sendAsync({
         method: 'eth_signTypedData',
@@ -193,24 +189,24 @@ class FormComponent extends Component {
     const currentRound = this.state.status.currentRound
 
     // setup signature data
-    const descriptionString = selectedProposal.action + ' ' + selectedProposal.target.name + ': ' + (vote ? 'Yes':'No')
+    const descriptionString = '\"' + selectedProposal.action + ' ' + selectedProposal.target.name + ' to list\"'
     const msgParams = [
       {
-        name: 'Description',
+        name: 'Proposal',
         type: 'string',
         value: descriptionString
       },
       {
-        name: 'proposalID',
+        name: 'Your vote',
         type: 'string',
-        value: selectedProposal._id
+        value: (vote ? 'Agree':'Disagree')
       },
       {
-        name: 'Vote',
-        type: 'uint',
-        value: vote
-      },
-  ]
+        name: 'Proposal ID',
+        type: 'string',
+        value: selectedProposal._id
+      }
+    ]
 
 
     web3.currentProvider.sendAsync({
@@ -227,13 +223,14 @@ class FormComponent extends Component {
           gameId: gameId,
           currentRound: currentRound,
           descriptionString: descriptionString,
-          proposalID: selectedProposal._id,
+          proposalId: selectedProposal._id,
           vote: vote,
           signature: result.result
         })
       })
 
   }
+
 
   // display functions
   startCountdown(){
@@ -280,15 +277,17 @@ class FormComponent extends Component {
 
       <main style={{display: 'flex', flexDirection: 'column'}}>
 
-        <div style={{flex: '1', display: 'flex', flexDirection: 'row'}}>
+        <div className="game-panel" style={{flex: '1'}}>
+          <RoundProgress
+            roundList={this.state.rounds}
+            timeRemainingRatio={this.state.timeRemaining/90}
+            caption={'Round ' + (this.state.status.currentRound + 1) + ': ' + this.state.status.currentPhase + ' (' + this.state.timeRemaining+ ')'}/>
+        </div>
 
-          <div style={{flex: '1', display: 'flex', flexDirection: 'column'}}>
+        <div style={{flex: '9', display: 'flex', flexDirection: 'row'}}>
 
-            <div className="game-panel" style={{flex: '2'}}>
+          <div style={{flex: '3', display: 'flex', flexDirection: 'column'}}>
 
-              <RoundProgress roundList={this.state.rounds} timeRemaining={this.state.timeRemaining}/>
-
-            </div>
             <div className="game-panel" style={{flex: '2'}}>
 
               <PlayerList
@@ -297,17 +296,25 @@ class FormComponent extends Component {
 
             </div>
 
+            <div className="game-panel" style={{flex: '2'}}>
+
+              Chat
+
+            </div>
+
           </div>
 
           <div style={{flex: '7', display: 'flex', flexDirection: 'column'}}>
-            <div className="game-panel" style={{flex: '5'}}>
+
+            <div className="game-panel" style={{flex: '1'}}>
 
                 {this.state.status.currentPhase === 'proposals' ?
 
                   <AddProposal
                     candidateList={this.state.candidateList}
                     itemList={this.state.items}
-                    submitProposal={this.submitProposal.bind(this)}/>
+                    submitProposal={this.submitProposal.bind(this)}
+                    userData={this.state.userData}/>
 
                 :null}
                 {this.state.status.currentPhase === 'votes' ?
@@ -332,11 +339,6 @@ class FormComponent extends Component {
 
             </div>
 
-            <div className="game-panel" style={{flex: '2'}}>
-
-              Chat
-
-            </div>
           </div>
 
         </div>

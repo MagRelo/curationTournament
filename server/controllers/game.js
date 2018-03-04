@@ -55,16 +55,15 @@ exports.handlePropsal = (game, socket, data) => {
       gameDoc = gameModel
 
       // setup signature data
+      const descriptionString = '\"' + data.action
+        + ' ' + data.target.name
+        + (data.action === 'add' ? ' to' : ' from'  )
+        + ' list\"'
       const msgParams = [
         {
-          name: 'Description',
+          name: 'Proposal',
           type: 'string',
-          value: data.descriptionString
-        },
-        {
-          name: 'gameID',
-          type: 'string',
-          value: data.gameId
+          value: descriptionString
         },
         {
           name: 'Round',
@@ -72,14 +71,9 @@ exports.handlePropsal = (game, socket, data) => {
           value: data.round
         },
         {
-          name: 'Action',
+          name: 'Game ID',
           type: 'string',
-          value: data.action
-        },
-        {
-          name: 'Target',
-          type: 'string',
-          value: data.target.symbol
+          value: data.gameId
         }
       ]
 
@@ -135,21 +129,21 @@ exports.handleVote = (game, socket, data) => {
         // setup signature data
         const msgParams = [
           {
-            name: 'Description',
+            name: 'Proposal',
             type: 'string',
             value: data.descriptionString
           },
           {
-            name: 'proposalID',
+            name: 'Your vote',
             type: 'string',
-            value: data.proposalID
+            value: (data.vote ? 'Agree':'Disagree')
           },
           {
-            name: 'Vote',
-            type: 'uint',
-            value: data.vote
-          },
-        ]
+            name: 'Proposal ID',
+            type: 'string',
+            value: data.proposalId
+          }
+      ]
 
         // recover account that signed signature
         userAddress = sigUtil.recoverTypedSignature({
@@ -167,7 +161,7 @@ exports.handleVote = (game, socket, data) => {
           throw {error: 'wrong round/voting closed'}
         }
 
-        return PredictionModel.findById(data.proposalID)
+        return PredictionModel.findById(data.proposalId)
       })
       .then(prediction => {
         predictionDoc = prediction

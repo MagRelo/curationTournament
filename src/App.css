@@ -78,10 +78,12 @@ hr{
   float: right;
   color: white;
 }
-.game-panel{
-  padding: 1em;
-  border: 1px solid white;
-  overflow: scroll;
+
+.game-panel {
+    padding: 0.5em;
+    margin: 0.5em;
+    overflow: scroll;
+    background: hsla(0, 0%, 97%, 0.1);
 }
 
 

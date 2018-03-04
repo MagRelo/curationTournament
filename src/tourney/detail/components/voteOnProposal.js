@@ -35,13 +35,8 @@ class voteOnProposal extends React.Component {
 
   }
 
-  answerYes(vote){
-    this.setState({selectedVote: 1})
-  }
-  answerNo(vote){
-    this.setState({selectedVote: 0})
-  }
-
+  answerYes(vote){ this.setState({selectedVote: 1}) }
+  answerNo(vote){ this.setState({selectedVote: 0}) }
   setVoteStyle(button){
     if(button === this.state.selectedVote){
       return {background: '#103A52'}
@@ -63,7 +58,7 @@ class voteOnProposal extends React.Component {
 
               <div style={{flex: 2}}>
 
-                <h3> Proposal </h3>
+                <h3> Pending Proposals </h3>
                 <SelectTable
                   items={this.props.proposalList.map(proposal => {return proposal.target})}
                   selectRow={this.selectItem.bind(this)}
@@ -74,10 +69,14 @@ class voteOnProposal extends React.Component {
               <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
 
                 <div style={{flex: 6}}>
-                  <h3> Vote </h3>
-                  <div>
-                    <p> {this.state.selectedProposal.action} {this.state.selectedProposal.target.name}? </p>
-                  </div>
+                  <h3> Vote on proposal</h3>
+                  {this.state.selectedProposal.target.symbol ?
+
+                    <div>
+                      <p> Proposal: {this.state.selectedProposal.action} {this.state.selectedProposal.target.name} </p>
+                    </div>
+
+                  :null}
                 </div>
 
                 <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
@@ -85,14 +84,14 @@ class voteOnProposal extends React.Component {
                     <button
                       className="pure-button pure-button-primary"
                       style={this.setVoteStyle(1)}
-                      onClick={this.answerYes.bind(this)}> Yes {this.state.selectedVote === 1 ? '✔' : ''}
+                      onClick={this.answerYes.bind(this)}> Agree {this.state.selectedVote === 1 ? '✔' : ''}
                     </button>
                   </div>
                   <div>
                     <button
                       className="pure-button pure-button-primary"
                       style={this.setVoteStyle(0)}
-                      onClick={this.answerNo.bind(this)}> No {this.state.selectedVote === 0  ? '✔' : ''}
+                      onClick={this.answerNo.bind(this)}> Disagree {this.state.selectedVote === 0  ? '✔' : ''}
                     </button>
                   </div>
                 </div>
