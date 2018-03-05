@@ -16,14 +16,6 @@ getWeb3
 import App from './App'
 import Page404 from  './errors/404'
 
-// import ContractList from './contracts/list/contractListContainer'
-// import ContractCreate from './contracts/create/CreateContractContainer'
-// import ContractDetail from './contracts/detail/tokenDetailContainer'
-// <Route path="contract/add" component={ContractCreate} />
-// <Route path="contract/list" component={ContractList} />
-// <Route path="contract/:contractId" component={ContractDetail} />
-// <Route path="contracts" component={ContractList} />
-
 import TourneyDetail from './tourney/detail/tourneyDetailContainer'
 import TourneyList from './tourney/list/listContainer'
 import TourneyCreate from './tourney/create/createTournamentContainer'

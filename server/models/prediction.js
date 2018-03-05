@@ -12,11 +12,12 @@ var PredictionSchema = new Schema({
     round: Number,
     userAddress: String,
     signature: String,
+    descriptionString: String,
     target: Object,
     action: String,
     votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}],
-    yesVotes: Number,
-    outcome: Boolean,
+    agreement:  Number,
+    outcome: Boolean
   },
   {timestamps: true}
 );
@@ -39,27 +40,24 @@ PredictionSchema.statics.addProposal = function(userAddress, data){
       action: data.action,
       target: data.target,
       signature: data.signature,
-      outcome: null
+      descriptionString: data.descriptionString
     },
     {upsert: true, new: true}
   )
 }
 
-PredictionSchema.statics.tallyVote = function(predictionId) {
+PredictionSchema.methods.tallyVote = function() {
 
-  // get predictions and w/ votes
-  return this.find({_id: predictionId})
-    .populate({path: 'votes', model: 'Vote', select: 'vote'})
-    .then(prediction => {
+  // tally votes
+  const yesVotes = this.prediction.votes.reduce((total, item) => {
+    return total + item.vote
+  }, 0)
 
-      // tally votes
-      prediction.yesVotes = prediction.votes.reduce((total, item) => {
-        return total + item.vote
-      }, 0)
+  // calculate level of consensus
+  this.prediction.agreement =  Math.abs(yesVotes - (prediction.votes.length - yesVotes))
 
-      // save
-      return prediction.save()
-    })
+  // save
+  return this.save()
 
 };
 

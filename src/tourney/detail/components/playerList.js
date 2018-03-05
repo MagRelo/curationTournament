@@ -17,7 +17,7 @@ const playerList = (props) => {
     <div>
 
       <h3>Players ({playerList.length})</h3>
-      <div style={{marginLeft: '1em'}}>
+      <div>
         <table className="pure-table pure-table-horizontal table-100">
           <thead>
             <tr>

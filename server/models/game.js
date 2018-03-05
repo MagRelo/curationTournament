@@ -49,6 +49,7 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
         path: 'predictions',
         model: 'Prediction',
         select: '_id action target round userAddress',
+        match: {action: {$ne: 'pass'}},
         populate: {
           path: 'votes',
           model: 'Vote',
@@ -69,25 +70,12 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
 
         const userAddressCompare = userAddress ? userAddress.toLowerCase() : ''
 
-
         // only include data for this user & round
         const userProposals = gameDoc.predictions
           .filter(prediction => {
             return (prediction.userAddress === userAddressCompare &&
               prediction.round === gameDoc.status.currentRound)
           })
-
-        const userVotes = gameDoc.predictions
-          .map(prediction => {
-            return {
-              _id: prediction._id,
-              round: prediction.round,
-              vote: prediction.votes.filter(vote => {
-                return vote.userAddress === userAddressCompare
-              })
-            }
-          })
-
 
         // publicify data
         return {
@@ -101,12 +89,16 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
               _id: prediction._id,
               round: prediction.round,
               action: prediction.action,
-              target: prediction.target              
+              target: prediction.target,
+              descriptionString: prediction.descriptionString,
+              userVoted: prediction.votes.some(vote => {
+                return vote.userAddress === userAddressCompare
+              }),
+              vote: userVote(userAddressCompare, prediction.votes)
             }
           }),
           userData: {
-            proposal: userProposals[0],
-            votes: userVotes
+            proposal: userProposals[0]
           }
         }
       })
@@ -120,6 +112,17 @@ module.exports = mongoose.model('Game', GameSchema);
 //
 
 
+function userVote(userAddress, votesArray){
+
+  let userVote = null
+  votesArray.forEach(vote=>{
+    if(vote.userAddress === userAddress){
+      userVote = vote.vote
+    }
+  })
+
+  return userVote
+}
 
 function updateStatus(currentStatus, config){
 

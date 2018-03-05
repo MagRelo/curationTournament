@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router'
 
-import WrappedModal from '../confirmationModal'
+// import WrappedModal from '../confirmationModal'
 
 class CreateContractForm extends Component {
   constructor(props) {

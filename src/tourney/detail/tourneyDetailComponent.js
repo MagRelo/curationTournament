@@ -156,14 +156,13 @@ class FormComponent extends Component {
       }
     ]
 
-
     web3.currentProvider.sendAsync({
         method: 'eth_signTypedData',
         params: [msgParams, userAddress],
         from: userAddress,
       }, function (err, result) {
         if (err) return console.error(err)
-        if (result.error) { return console.error(result.error.message) }
+        if (result.error) return console.error(result.error.message)
 
         // send to server
         gameSocket.emit('proposal', {
@@ -208,14 +207,13 @@ class FormComponent extends Component {
       }
     ]
 
-
     web3.currentProvider.sendAsync({
         method: 'eth_signTypedData',
         params: [msgParams, userAddress],
         from: userAddress,
       }, function (err, result) {
         if (err) return console.error(err)
-        if (result.error) { return console.error(result.error.message) }
+        if (result.error) return console.error(result.error.message)
 
         // send to server
         gameSocket.emit('vote', {
@@ -272,69 +270,75 @@ class FormComponent extends Component {
     return input
   }
 
+
   render() {
     return(
 
       <main style={{display: 'flex', flexDirection: 'column'}}>
 
-        <div className="game-panel" style={{flex: '1'}}>
-          <RoundProgress
-            roundList={this.state.rounds}
-            timeRemainingRatio={this.state.timeRemaining/90}
-            caption={'Round ' + (this.state.status.currentRound + 1) + ': ' + this.state.status.currentPhase + ' (' + this.state.timeRemaining+ ')'}/>
+        <div className="game-panel white-bg" style={{flex: '2'}}>
+
+          <p>Tournament contract: 1-231-02391-23091-029</p>
+          <p>Network: Rinkeby</p>
+          <p>value: 123 ETH</p>
+
         </div>
 
         <div style={{flex: '9', display: 'flex', flexDirection: 'row'}}>
 
+
           <div style={{flex: '3', display: 'flex', flexDirection: 'column'}}>
 
-            <div className="game-panel" style={{flex: '2'}}>
-
+            <div className="game-panel white-bg" style={{flex: '1'}}>
               <PlayerList
                 playerList={this.state.playerList}
                 currentAccount={this.props.userAddress || ''}/>
-
             </div>
-
-            <div className="game-panel" style={{flex: '2'}}>
-
-              Chat
-
+            <div className="game-panel white-bg" style={{flex: '1'}}>
+              <h3>Chat</h3>
             </div>
 
           </div>
 
-          <div style={{flex: '7', display: 'flex', flexDirection: 'column'}}>
+          <div className="game-panel white-border" style={{flex: '7', display: 'flex', flexDirection: 'column'}}>
 
-            <div className="game-panel" style={{flex: '1'}}>
+            <div style={{flex: '1'}}>
+              <RoundProgress
+                roundList={this.state.rounds}
+                timeRemaining={this.state.timeRemaining}
+                timeRemainingRatio={this.state.timeRemaining/30}
+                status={this.state.status}/>
+            </div>
 
-                {this.state.status.currentPhase === 'proposals' ?
+            <div style={{flex: '7'}}>
 
-                  <AddProposal
-                    candidateList={this.state.candidateList}
-                    itemList={this.state.items}
-                    submitProposal={this.submitProposal.bind(this)}
-                    userData={this.state.userData}/>
+              {this.state.status.currentPhase === 'proposals' ?
 
-                :null}
-                {this.state.status.currentPhase === 'votes' ?
+                <AddProposal
+                  candidateList={this.state.candidateList}
+                  itemList={this.state.items}
+                  submitProposal={this.submitProposal.bind(this)}
+                  userData={this.state.userData}/>
 
-                  <VoteOnProposal
-                    proposalList={this.state.predictions}
-                    submitVote={this.submitVote.bind(this)}/>
+              :null}
+              {this.state.status.currentPhase === 'votes' ?
 
-                :null}
-                {this.state.status.currentPhase === 'results' ?
+                <VoteOnProposal
+                  proposalList={this.state.predictions}
+                  submitVote={this.submitVote.bind(this)}/>
 
-                  <RoundResults
-                    resultsList={this.state.items}/>
+              :null}
+              {this.state.status.currentPhase === 'results' ?
 
-                :null}
-                {this.state.status.currentPhase === 'complete' ?
+                <RoundResults
+                  resultsList={this.state.items}/>
 
-                  <p>Complete</p>
+              :null}
+              {this.state.status.currentPhase === 'complete' ?
 
-                :null}
+                <p>Complete</p>
+
+              :null}
 
 
             </div>

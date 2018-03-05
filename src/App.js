@@ -9,8 +9,8 @@ import './css/barlow.css'
 
 import './css/pure-min.css'
 import './css/grids-responsive-min.css'
-import 'medium-editor/dist/css/medium-editor.css'
-import 'medium-editor/dist/css/themes/default.css'
+// import 'medium-editor/dist/css/medium-editor.css'
+// import 'medium-editor/dist/css/themes/default.css'
 
 import './App.css'
 

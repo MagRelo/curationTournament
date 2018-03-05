@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router'
-import {Tokenizer}  from 'react-typeahead';
+// import {Tokenizer}  from 'react-typeahead';
 
-class ContractList extends Component {
+class TournamentList extends Component {
   constructor(props, { authData }) {
     super(props)
     authData = this.props
@@ -38,4 +38,4 @@ class ContractList extends Component {
   }
 }
 
-export default ContractList
+export default TournamentList

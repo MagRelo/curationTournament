@@ -2,42 +2,29 @@ import React from 'react'
 import {Line} from 'react-progressbar.js'
 
 const roundProgress = (props) => {
-  const {roundList, timeRemainingRatio, caption} = props
+  const {roundList, timeRemaining, timeRemainingRatio, status} = props
 
-  var options = {
-       strokeWidth: 2,
-       color: '#ffffff',
-       style: {
-           // Text color.
-           // Default: same as stroke color (options.color)
-           color: '#ffffff',
-           position: 'absolute',
-           left: '50%',
-           top: '50%',
-           padding: 0,
-           margin: 0,
-           // You can specify styles which will be browser prefixed
-           transform: {
-               prefix: true,
-               value: 'translate(-50%, -50%)'
-           }
-       },
-     };
-  var containerStyle = {
-     width: '100%',
-     height: '40px'
-  };
+  var options = { strokeWidth: 0.5, color: '#ffffff' };
+  var containerStyle = { width: '100%', height: '10px' };
 
   return(
-    <div className="progressbar">
-      <Line
-        progress={timeRemainingRatio}
-        text={caption}
-        options={options}
-        initialAnimate={false}
-        containerStyle={containerStyle}
-        containerClassName={'.progressbar'} />
+    <div className="game-panel">
+
+      <h2>{'Round ' + (status.currentRound + 1) + ': ' + status.currentPhase}</h2>
+      <div className="progressbar" style={{transform: 'rotateY(180deg)'}}>
+        <Line
+          progress={timeRemainingRatio}
+          options={options}
+          initialAnimate={false}
+          containerStyle={containerStyle}
+          containerClassName={'.progressbar'} />
+      </div>
+      <div style={{textAlign: 'right'}}>
+        <time>Time remaining: {timeRemaining}</time>
+      </div>
+
     </div>
+
 
   )
 

@@ -57,18 +57,14 @@ h2, h3 {
   width: 100%
 }
 
-.currency-box{
-  float: right;
-  color: #129c17;
-}
-
-
 hr{
   border-color: #103A52;
   border-width: 0;
   border-bottom-width: 1px;
 }
 
+/* Remove */
+/* used in create form  */
 .pad-box{
   padding: 0 1em;
   box-sizing: border-box;
@@ -79,50 +75,29 @@ hr{
   color: white;
 }
 
+/* Remove */
+/* used in create form  */
+
+
+/* tournament detail */
 .game-panel {
-    padding: 0.5em;
-    margin: 0.5em;
-    overflow: scroll;
-    background: hsla(0, 0%, 97%, 0.1);
+  padding: 0.5em;
+  margin: 0.5em;
+  overflow: scroll;
 }
-
-
-.icon-holder{
-  width: 55px;
-  float: left;
-  margin-right: 1em;
+.game-panel.white-bg{
+  background: hsla(0, 0%, 97%, 0.1);
 }
-.icon-holder .icon{
-  width: 55px;
-  height: 55px;
-  border-radius: 20%;
-  float: left;
-  background-size: 55px 55px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-.logo{
-  max-width: 100%;
-  max-height: 10em;
-}
-.logo-holder{
-  height: 48px;
-  float: left;
-  margin-right: -2em;
-  margin-left: -2.5em;
-  overflow: hidden;
-}
-.logo-holder .logo{
-  width: 120px;
-  height: 24px;
-  float: left;
-  background-size: 35px 35px;
-  -webkit-transform: rotateZ(35deg);
-  -ms-transform: rotate(35deg);
-  transform: rotateZ(60deg);
+.game-panel.white-border{
+  border: solid 1px hsla(0, 0%, 97%, 1);
 }
 
 
 /*Confirmation modal */
+.ReactModal__Content.ReactModal__Content--after-open{
+  margin-right: 40%;
+  max-height: 600px;
+}
 .confirm-container{
   min-width: 320px;
   background-color: #175772;
@@ -163,12 +138,10 @@ a.pure-link-primary:visited{
   background-color: #FF5934;
 }
 
-/*#01ca4c*/
-
+/* Table */
 .pure-table{
   border: none;
 }
-
 .pure-table > thead {
   background: inherit;
   color: inherit;
@@ -176,31 +149,25 @@ a.pure-link-primary:visited{
   font-size: small;
   text-align: center;
 }
-
 .pure-table > tbody{
   text-align: center;
 }
-
 .pure-table-horizontal td,
 .pure-table-horizontal th {
   border-bottom: 1px solid #103A52;
 }
 
+/* forms */
 .pure-form{
   padding: 0 1em 1em 1em;
-
 }
-
 form > p {
   margin-top: 0.5em;
   margin-bottom: 0.2em;
 }
-
-
 .pure-form input[type="text"]:focus {
   border-color: #0c1a2b;
 }
-
 .pure-form input{
   /*width: 100%;*/
   margin-bottom: 1em;
@@ -208,7 +175,6 @@ form > p {
   background-color: #175872;
   box-shadow: none;
 }
-
 .pure-form label{
   font-family: 'Barlow', 'Arial Narrow', sans-serif;
   text-transform: uppercase;
@@ -224,12 +190,10 @@ form > p {
   height: 40px;
   margin: 40px auto;
   background-color: #ffffff;
-
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
 }
-
 @-webkit-keyframes sk-scaleout {
   0% { -webkit-transform: scale(0) }
   100% {
@@ -237,7 +201,6 @@ form > p {
     opacity: 0;
   }
 }
-
 @keyframes sk-scaleout {
   0% {
     -webkit-transform: scale(0);
@@ -250,151 +213,78 @@ form > p {
 }
 
 /* NAVBAR */
-
 .navbar {
   position: fixed;
   padding: 5px;
   background: #103A52;
   font-family: 'Michroma', 'Arial Narrow', sans-serif;
 }
-
 .navbar a {
   color: #fff;
 }
-
 .navbar a:active,
 .navbar a:focus,
 .navbar a:hover {
   /*background: #F7BF5C;*/
 }
-
 nav.navbar.pure-menu.pure-menu-horizontal{
   padding: 0
 }
-
 a.pure-menu-link{
   padding: 0.75em 1em;
   font-size: 14px;
 }
-
 ul.pure-menu-list.navbar-right {
     margin-right: 1em;
 }
-
 .pure-menu-active>.pure-menu-link, .pure-menu-link:focus, .pure-menu-link:hover{
   background: inherit;
 }
-
 .navbar .pure-menu-heading {
   font-weight: bold;
   text-transform: none;
 }
-
 .navbar .navbar-right {
   float: right;
 }
-
-
-/* HOME */
-
-
-/*MODAL*/
-.ReactModal__Content.ReactModal__Content--after-open{
-  margin-right: 40%;
-  max-height: 600px;
+.logo{
+  max-width: 100%;
+  max-height: 10em;
+}
+.logo-holder{
+  height: 48px;
+  float: left;
+  margin-right: -2em;
+  margin-left: -2.5em;
+  overflow: hidden;
+}
+.logo-holder .logo{
+  width: 120px;
+  height: 24px;
+  float: left;
+  background-size: 35px 35px;
+  -webkit-transform: rotateZ(35deg);
+  -ms-transform: rotate(35deg);
+  transform: rotateZ(60deg);
 }
 
 
-
-
-.account-details{
-  padding: 1em;
-}
-.account-details > p {
-  margin: 0.4em 0;
-  font-size: smaller;
-}
-
-
-.profile-menu-link{
-  height: 17px;
-  margin-top: 5px;
-}
-
-.purchase-total{
-  border-top: solid 1px #c9c9ca;
-  padding-top: 8px;
-}
-
-.title-button{
-  margin-left: 1em;
-}
-
-.contractList{
-  list-style: none;
-  padding: 0;
-}
-
-.contract-item-container{
-  padding: 1em;
-  background: #eceeef;
-  color: #222222;
-}
-
-.contractList li {
-  margin-bottom: 1em;
-}
-.contractList li a{
-  text-decoration: none;
-  color: white;
-}
-.contractList .text-holder{
-  padding: 0 1em;
-}
-
-.contractOptions {
-  display: flex;
-
-  font-family: 'Barlow', 'Arial Narrow', sans-serif;
-  text-align: center;
-  text-transform: uppercase;
-  font-size: smaller;
-
-}
-.contractOptions div {
-  flex: 1 1 auto;
-}
-.contractOptions div div{
-  margin-top: .3em;
-}
-
-.accountNavText{
-  font-size: 14px;
-  color: #ffffff;
-  padding: 0.75em 1em;
-}
-
-
-/*contract list*/
+/*tournament list*/
 .tile-outer{
   box-sizing: border-box;
   padding: 1em;
 }
-
 .tile-outer a {
   text-decoration: none;
 }
 .tile-outer h3 {
   border: none;
 }
-
-
 .tile-inner{
   min-height: 200px;
   border: 1px solid white;
   padding: 1em;
 }
-
 .tile-inner h3{
   color: white;
   text-decoration: none;

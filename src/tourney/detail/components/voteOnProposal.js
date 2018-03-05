@@ -1,5 +1,4 @@
 import React from 'react'
-import SelectTable from './selectTable'
 
 class voteOnProposal extends React.Component {
   constructor(props){
@@ -23,7 +22,7 @@ class voteOnProposal extends React.Component {
 
   submitVote(target, action){
 
-    this.props.submitVote(this.state.selectedProposal, this.state.selectedVote)
+    this.props.submitVote(target, action)
 
     this.setState({
       selectedProposal: {
@@ -46,67 +45,58 @@ class voteOnProposal extends React.Component {
     return {}
   }
 
+  descriptionString(item){
+    return '\"' + item.action
+    + ' ' + item.target.name
+    + (item.action === 'add' ? ' to' : ' from'  )
+    + ' list\"'
+  }
+
+  activeClass(item, vote){
+
+    let defaultStyle = 'pure-button'
+
+    if(item.userVoted && item.vote == vote){
+      defaultStyle += ' pure-button-active'
+    }
+
+    return defaultStyle
+  }
+
+  hasVoted(userAddress, itemId){
+    return
+  }
+
   render(){
       return(
-        <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
 
-          <div style={{flex: 1}}>
-            <h2>Vote on Proposals</h2>
-          </div>
+          <div className="game-panel" style={{flex: 7}}>
+            <h3> Vote on pending proposals: </h3>
 
-          <div style={{flex: 7, display: 'flex', flexDirection: 'row'}}>
+            <ul style={{padding: 0}}>
+              {this.props.proposalList.map(item => {
+                return <li style={{listItem: 'none'}} key={item._id}>
 
-              <div style={{flex: 2}}>
+                  <div className="game-panel">
 
-                <h3> Pending Proposals </h3>
-                <SelectTable
-                  items={this.props.proposalList.map(proposal => {return proposal.target})}
-                  selectRow={this.selectItem.bind(this)}
-                  selectedItem={this.state.selectedProposal.target}
-                  action=""/>
+                    <button className={this.activeClass(item, 0)}
+                      style={{float: 'right'}}
+                      onClick={() => {this.submitVote(item, 0)}}>against</button>
 
-              </div>
-              <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
+                    <button className={this.activeClass(item, 1)}
+                      style={{float: 'right'}}
+                      onClick={() => {this.submitVote(item, 1)}}>in favor</button>
 
-                <div style={{flex: 6}}>
-                  <h3> Vote on proposal</h3>
-                  {this.state.selectedProposal.target.symbol ?
 
-                    <div>
-                      <p> Proposal: {this.state.selectedProposal.action} {this.state.selectedProposal.target.name} </p>
-                    </div>
+                    Proposal: {this.descriptionString(item)}
 
-                  :null}
-                </div>
-
-                <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
-                  <div>
-                    <button
-                      className="pure-button pure-button-primary"
-                      style={this.setVoteStyle(1)}
-                      onClick={this.answerYes.bind(this)}> Agree {this.state.selectedVote === 1 ? '✔' : ''}
-                    </button>
                   </div>
-                  <div>
-                    <button
-                      className="pure-button pure-button-primary"
-                      style={this.setVoteStyle(0)}
-                      onClick={this.answerNo.bind(this)}> Disagree {this.state.selectedVote === 0  ? '✔' : ''}
-                    </button>
-                  </div>
-                </div>
 
-                <div style={{flex: 1, textAlign: 'center'}}>
-                  <button
-                    className="pure-button pure-button-primary"
-                    disabled={!this.state.selectedProposal || this.state.selectedVote === null}
-                    onClick={() => {this.submitVote(this.state.selectedProposal, this.state.selectedVote)}}> Submit </button>
-                </div>
-
-              </div>
+                </li>
+              })}
+            </ul>
 
           </div>
-        </div>
       )
 
   }
