@@ -28,7 +28,7 @@ function contractCreated(contract) {
   }
 }
 
-export function createTournament(rounds){
+export function createTournament(options){
   return function(dispatch){
 
     return fetch('/api/game',{
@@ -36,9 +36,7 @@ export function createTournament(rounds){
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        rounds: 3
-      })
+      body: JSON.stringify(options)
     })
     .then(rawResponse => {
       if(rawResponse.status !== 200){ throw new Error(rawResponse.text) }

@@ -8,12 +8,12 @@ const moment = require('moment')
 
 var GameSchema =  new Schema({
     config: {
-      rounds: {type: Number, default: 3},
-      lengthOfPhase: {type: Number, default: 30},
-      tournamentStart: {type: Date, default: ()=>{
-        const now = new Date
-        return moment(now).add(10, 'm').toDate()
-      }}
+      ownerAddress: {type: String},
+      oracleAddress: {type: String},
+      name: {type: String},
+      rounds: {type: Number},
+      minDeposit: {type: Number},
+      lengthOfPhase: {type: Number, default: 30}
     },
     status: {
       currentRound: {type: Number, default: 0},

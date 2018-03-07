@@ -13,11 +13,21 @@ const Game = require('mongoose').model('Game')
 exports.createGame = (req, res) => {
   const newGame = new GameSchema({})
 
+  // validate input
+  const options = req.body
+
+  newGame.config.name = options.name
+  newGame.config.ownerAddress = options.contractOwner
+  newGame.config.oracleAddress = options.oracleAddress
+  newGame.config.minDeposit = options.minDeposit
+  newGame.config.rounds = options.rounds
+
+  newGame.rounds = buildRounds(options.rounds)
+  newGame.playerList = options.playerList
+
   // TODO testing
-  newGame.rounds = buildRounds(3, playerList)
   newGame.status.gameInProgress = true
   newGame.candidateList = candidateList
-  newGame.playerList = playerList
 
   newGame.save()
     .then(gameDoc => { res.json(gameDoc) })

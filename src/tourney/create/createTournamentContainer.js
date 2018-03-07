@@ -4,9 +4,8 @@ import { createTournament } from '../TourneyActions'
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    transactionPending: state.web3.transactionPending,
-    transactionError: state.web3.transactionError,
-    transactionID: state.web3.transactionID
+    web3: state.web3,
+    userAddress: state.web3.account
   }
 }
 

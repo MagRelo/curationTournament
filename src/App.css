@@ -285,7 +285,10 @@ ul.pure-menu-list.navbar-right {
   border: 1px solid white;
   padding: 1em;
 }
-.tile-inner h3{
+.tile-inner:hover{
+  background: hsla(0, 0%, 97%, 0.1);
+}
+.tile-inner h3, .tile-inner p{
   color: white;
   text-decoration: none;
 }
