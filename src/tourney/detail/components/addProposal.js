@@ -25,7 +25,7 @@ class AddProposal extends React.Component {
   render () {
     return(
 
-        <div style={{display: 'flex', flexDirection: 'row'}}>
+        <div className="game-panel" style={{display: 'flex', flexDirection: 'row'}}>
 
           <div style={{flex: 3}}>
             <h3>Remove an item</h3>

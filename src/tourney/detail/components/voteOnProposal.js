@@ -67,7 +67,7 @@ class voteOnProposal extends React.Component {
   render(){
       return(
 
-          <div className="game-panel" style={{flex: 7}}>
+          <div className="game-panel">
             <h3> Vote on pending proposals: </h3>
 
             <ul style={{padding: 0}}>

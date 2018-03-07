@@ -306,48 +306,41 @@ class FormComponent extends Component {
 
           </div>
 
-          <div className="game-panel white-border" style={{flex: '7', display: 'flex', flexDirection: 'column'}}>
+          <div className="game-panel white-border" style={{flex: '7'}}>
 
-            <div style={{flex: '1'}}>
-              <RoundProgress
-                roundList={this.state.rounds}
-                timeRemaining={this.state.timeRemaining}
-                timeRemainingRatio={this.state.timeRemaining/30}
-                status={this.state.status}/>
-            </div>
+            <RoundProgress
+              roundList={this.state.rounds}
+              timeRemaining={this.state.timeRemaining}
+              timeRemainingRatio={this.state.timeRemaining/30}
+              status={this.state.status}/>
 
-            <div style={{flex: '7'}}>
+            {this.state.status.currentPhase === 'proposals' ?
 
-              {this.state.status.currentPhase === 'proposals' ?
+              <AddProposal
+                candidateList={this.state.candidateList}
+                itemList={this.state.items}
+                submitProposal={this.submitProposal.bind(this)}
+                userData={this.state.userData}/>
 
-                <AddProposal
-                  candidateList={this.state.candidateList}
-                  itemList={this.state.items}
-                  submitProposal={this.submitProposal.bind(this)}
-                  userData={this.state.userData}/>
+            :null}
+            {this.state.status.currentPhase === 'votes' ?
 
-              :null}
-              {this.state.status.currentPhase === 'votes' ?
+              <VoteOnProposal
+                proposalList={this.state.predictions}
+                submitVote={this.submitVote.bind(this)}/>
 
-                <VoteOnProposal
-                  proposalList={this.state.predictions}
-                  submitVote={this.submitVote.bind(this)}/>
+            :null}
+            {this.state.status.currentPhase === 'results' ?
 
-              :null}
-              {this.state.status.currentPhase === 'results' ?
+              <RoundResults
+                proposalList={this.state.predictions}/>
 
-                <RoundResults
-                  proposalList={this.state.predictions}/>
+            :null}
+            {this.state.status.currentPhase === 'complete' ?
 
-              :null}
-              {this.state.status.currentPhase === 'complete' ?
+              <p>Complete</p>
 
-                <p>Complete</p>
-
-              :null}
-
-
-            </div>
+            :null}
 
           </div>
 

@@ -11,6 +11,7 @@ const roundProgress = (props) => {
     <div className="game-panel">
 
       <h2>{'Round ' + (status.currentRound + 1) + ': ' + status.currentPhase}</h2>
+
       <div className="progressbar" style={{transform: 'rotateY(180deg)'}}>
         <Line
           progress={timeRemainingRatio}
@@ -19,13 +20,12 @@ const roundProgress = (props) => {
           containerStyle={containerStyle}
           containerClassName={'.progressbar'} />
       </div>
+
       <div style={{textAlign: 'right'}}>
-        <time>Time remaining: {timeRemaining}</time>
+        Time remaining: {timeRemaining}
       </div>
 
     </div>
-
-
   )
 
 }

@@ -30,7 +30,7 @@ const playerList = (props) => {
             {playerList.map( player =>{
               return <tr key={player.userAddress}
                 style={{color: player.userAddress.toLowerCase() === currentAccount.toLowerCase() ? 'orange': ''}}>
-                  <td>{player.userAddress.substring(0, 12)}...</td>
+                  <td>{player.userAddress.substring(0, 10)}</td>
                   <td>{player.chips}</td>
               </tr>
             })}
