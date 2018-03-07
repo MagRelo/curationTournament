@@ -148,7 +148,7 @@ class CreateContractForm extends Component {
 
         <button
           type="submit"
-          className="pure-button pure-button-primary"
+          className="pure-button pure-button-xlarge pure-button-primary"
           onClick={this.handleSubmit.bind(this)}> + Create tournament
         </button>
 

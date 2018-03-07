@@ -89,7 +89,7 @@ hr{
   background: hsla(0, 0%, 97%, 0.1);
 }
 .game-panel.white-border{
-  border: solid 1px hsla(0, 0%, 97%, 1);
+  border: solid 1px hsla(0, 0%, 70%, 1);
 }
 
 
@@ -135,6 +135,9 @@ a.pure-link-primary:visited{
 }
 .pure-button-active{
   background-color: #9bdcaa;
+}
+.pure-button-xlarge{
+   font-size: 115%;
 }
 
 /* Table */
