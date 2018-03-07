@@ -23,7 +23,7 @@ exports.createGame = (req, res) => {
   newGame.config.rounds = options.rounds
 
   newGame.rounds = buildRounds(options.rounds)
-  newGame.playerList = options.playerList
+  newGame.playerList = buildPlayerList(options.playerList)
 
   // TODO testing
   newGame.status.gameInProgress = true
@@ -202,7 +202,22 @@ exports.handleVote = (game, socket, data) => {
 
 }
 
-function buildRounds(roundsCount, playerList){
+
+function buildPlayerList(playerList){
+
+  let list = []
+
+  // build rounds
+  for(let i=0; i < playerList.length; i++){
+    list.push({
+      userAddress: playerList[i],
+      chips: 100
+    })
+  }
+
+  return list
+}
+function buildRounds(roundsCount){
 
   let rounds = []
 
@@ -223,11 +238,6 @@ function playerOnList(userAddress, playerList){
     return player.userAddress.toLowerCase() === userAddress.toLowerCase()
   })
 }
-const playerList = [
-  { userAddress: '0x863afa452F38966b54Cb1149D934e34670D0683a', chips: 100 },
-  { userAddress: '0x106F681949E222D57A175cD85685E3bD9975b973', chips: 100 },
-  { userAddress: '0xdf396910e693f7De31eF88d0090F2A4333ffcCF3', chips: 100 }
-]
 const candidateList = [
     {
         "id": "bitcoin",

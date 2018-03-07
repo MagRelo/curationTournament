@@ -22,6 +22,22 @@ class FormComponent extends Component {
     super(props)
 
 
+    // connect to game
+    gameSocket = io('http://localhost:8080/game');
+
+    gameSocket.on('error', this.socketError)
+    // gameSocket.on('disconnect', this.socketError)
+    // gameSocket.on('connect_failed', this.socketError)
+    // gameSocket.on('reconnect_failed', this.socketError)
+    gameSocket.on('reconnecting', this.socketError)
+    gameSocket.on('connect', data =>{
+      console.log('Game connected')
+    })
+    gameSocket.on('update', this.updateGameData.bind(this))
+
+
+
+
     this.state = {
       modalIsOpen: false,
       timeRemaining: 30,
@@ -43,31 +59,23 @@ class FormComponent extends Component {
     // wait for web3 to be injected
     let intId = 0
     if(this.props.web3.web3Instance){
+
+      console.log('web3 ready');
+      gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
       this.setState({ready: true})
+
     } else {
       intId = setInterval(watchForWeb3.bind(this), 500)
     }
+
     function watchForWeb3(){
       if(this.props.web3.web3Instance){
-        console.log('web3 ready!');
 
-        // setup sockets here(?)
-
-        // connect to game
-        gameSocket = io('http://localhost:8080/game');
-
-        gameSocket.on('error', this.socketError)
-        // gameSocket.on('disconnect', this.socketError)
-        // gameSocket.on('connect_failed', this.socketError)
-        // gameSocket.on('reconnect_failed', this.socketError)
-        gameSocket.on('reconnecting', this.socketError)
-        gameSocket.on('connect', data =>{
-          console.log('Game connected, fetching data...')
-          gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
-        })
-        gameSocket.on('update', this.updateGameData.bind(this))
-
+        console.log('web3 ready');
+        gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
         this.setState({ready: true})
+
+        // clear timer
         clearInterval(intId);
       } else {
         console.log('watching for web3...')
