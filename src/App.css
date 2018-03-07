@@ -102,12 +102,10 @@ hr{
   min-width: 320px;
   background-color: #175772;
 }
-
 .confirm-title-container{
   background-color: #103A52;
   padding: 1em;
 }
-
 .confirm-body-container{
   padding: 0 1em 1em 1em;
 }
@@ -122,20 +120,21 @@ a.pure-button-primary:hover,
 .pure-button-primary:hover {
   background-color: #FF5934;
 }
-
 a.pure-link-primary{
   color: #DDDDDD;
 }
 a.pure-link-primary:visited{
   color: #FF5934;
 }
-
 .pure-button-success {
   color: white;
   background-color: #FF5934;
 }
 .pure-button-success:hover {
   background-color: #FF5934;
+}
+.pure-button-active{
+  background-color: #9bdcaa;
 }
 
 /* Table */

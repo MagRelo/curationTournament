@@ -23,11 +23,11 @@ VoteSchema.statics.addVote = function(userAddress, data){
   return this.findOneAndUpdate(
     {
       userAddress: userAddress,
-      predictionId: data.predictionID
+      predictionId: data.proposalId
     },
     {
       gameId: data.gameId,
-      predictionId: data.proposalID,
+      predictionId: data.proposalId,
       userAddress: userAddress,
       signature: data.signature,
       vote: data.vote,

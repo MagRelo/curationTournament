@@ -57,51 +57,49 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
         }
       })
       .then(gameDoc => {
-        if(!gameDoc){return console.log('no gameDoc!', gameId);}
+        if(!gameDoc){return console.log('no gameDoc!', gameId)}
 
-        // check status
-        // const playerCount = gameDoc.playerList.length
-        // const round = gameDoc.status.currentRound
-        // const phase = gameDoc.status.currentPhase
-        // const roundPredictions = gameDoc.predictions
-        //   .filter(prediction => prediction.round === gameDoc.status.currentRound)
-        //   .length
+        let needsSave = false
 
-
-        const userAddressCompare = userAddress ? userAddress.toLowerCase() : ''
-
-        // only include data for this user & round
-        const userProposals = gameDoc.predictions
+        // get status
+        const currentProposals = gameDoc.predictions
           .filter(prediction => {
-            return (prediction.userAddress === userAddressCompare &&
-              prediction.round === gameDoc.status.currentRound)
+            return (prediction.round === gameDoc.status.currentRound)
+          })
+        const proposalsComplete = (currentProposals.length === gameDoc.playerList.length)
+        const votesComplete = currentProposals
+          .every(prediction => {
+            return (prediction.votes.length === gameDoc.playerList.length)
           })
 
-        // publicify data
-        return {
-          status: gameDoc.status,
-          itemList: gameDoc.itemList,
-          candidateList: gameDoc.candidateList,
-          playerList: gameDoc.playerList,
-          rounds: gameDoc.rounds,
-          predictions: gameDoc.predictions.map(prediction => {
-            return {
-              _id: prediction._id,
-              round: prediction.round,
-              action: prediction.action,
-              target: prediction.target,
-              descriptionString: prediction.descriptionString,
-              userVoted: prediction.votes.some(vote => {
-                return vote.userAddress === userAddressCompare
-              }),
-              vote: userVote(userAddressCompare, prediction.votes)
-            }
-          }),
-          userData: {
-            proposal: userProposals[0]
-          }
+        // transition Status
+        if(gameDoc.status.currentPhase === 'proposals' && proposalsComplete){
+
+          gameDoc.status = transitionStatus(gameDoc.status, 30)
+          needsSave = true
+        }
+        if(gameDoc.status.currentPhase === 'votes' && votesComplete){
+
+          console.log('calculate');
+
+          gameDoc.status = transitionStatus(gameDoc.status, 30)
+          needsSave = true
+        }
+        if(gameDoc.status.currentPhase === 'results'){
+          // gameDoc.status = transitionStatus(gameDoc.status, 30)
+        }
+
+
+        if(needsSave){
+          return gameDoc.save()
+        } else {
+          return Promise.resolve(gameDoc)
         }
       })
+      .then(gameDoc => {
+        return publicData(gameDoc, userAddress)
+      })
+
 
 };
 
@@ -109,76 +107,73 @@ module.exports = mongoose.model('Game', GameSchema);
 
 // Helpers
 // --------------
-//
+function publicData(gameDoc, userAddress){
 
+    // only include data for this user & round
+    const userAddressCompare = userAddress ? userAddress.toLowerCase() : ''
+    const userProposals = gameDoc.predictions
+      .filter(prediction => {
+        return (prediction.userAddress === userAddressCompare &&
+          prediction.round === gameDoc.status.currentRound)
+      })
 
+    // publicify data
+    return {
+      config: gameDoc.config,
+      status: gameDoc.status,
+      itemList: gameDoc.itemList,
+      candidateList: gameDoc.candidateList,
+      playerList: gameDoc.playerList,
+      rounds: gameDoc.rounds,
+      predictions: gameDoc.predictions.map(prediction => {
+        return {
+          _id: prediction._id,
+          round: prediction.round,
+          action: prediction.action,
+          target: prediction.target,
+          descriptionString: prediction.descriptionString,
+          userVoted: prediction.votes.some(vote => {
+            return vote.userAddress === userAddressCompare
+          }),
+          vote: userVote(userAddressCompare, prediction.votes)
+        }
+      }),
+      userData: {
+        proposal: userProposals[0]
+      }
+    }
+
+}
 function userVote(userAddress, votesArray){
-
   let userVote = null
-  votesArray.forEach(vote=>{
+  votesArray.forEach(vote => {
     if(vote.userAddress === userAddress){
       userVote = vote.vote
     }
   })
-
   return userVote
 }
-
-function updateStatus(currentStatus, config){
-
-  // const phaseStart = moment(currentStatus.phaseStartTime)
-  // const secondsElapsed = moment().diff(phaseStart, 'seconds')
-  // const timeRemaining = config.lengthOfPhase - secondsElapsed
-  // const lengthOfPhase = config.lengthOfPhase
-  //
-  // default to current phase
-  let status = {
-    "currentRound" : currentStatus.currentRound,
-    "currentPhase" : currentStatus.currentPhase,
-    "phaseStartTime": currentStatus.phaseStartTime,
-    "timeRemaining" : timeRemaining,
-    "gameInProgress": true
-  }
-
-  // // end game
-  // if(timeRemaining <= 0
-  //   && currentStatus.currentPhase === 'results'
-  //   && currentStatus.currentRound + 1 >= config.rounds){
-  //     console.log('Game Over:', currentStatus.currentRound + 1, '>', config.rounds);
-  //     status.currentPhase = 'complete'
-  //     status.gameInProgress = false
-  //     status.gameComplete = true
-  // }
-  //
-  // // transition to next phase
-  // if(timeRemaining <= 0
-  //   && status.gameInProgress){
-  //     console.log('transition from: ', currentStatus.currentRound,'-', currentStatus.currentPhase);
-  //     status = transitionStatus(currentStatus, config.lengthOfPhase)
-  // }
-
-  status = transitionStatus(currentStatus, config.lengthOfPhase)
-
-  return status
-}
-
 function transitionStatus(currentStatus, lengthOfPhase){
 
   const newStartTime = new Date()
   let newPhase = ''
   let newRound = currentStatus.currentRound
-  let closeRound = false
 
-  if(currentStatus.currentPhase === 'proposals'){ newPhase: 'votes' }
-  if(currentStatus.currentPhase === 'votes'){ newPhase: 'results' }
+  if(currentStatus.currentPhase === 'proposals'){
+    console.log('transition to votes');
+    newPhase = 'votes'
+  }
+  if(currentStatus.currentPhase === 'votes'){
+    console.log('transition to results');
+    newPhase = 'results'
+  }
   if(currentStatus.currentPhase === 'results'){
-    newPhase: 'proposals'
-    newRound:  parseInt(currentRound, 10) + 1
-    closeRound: true
+    console.log('transition to results');
+    newPhase = 'proposals'
+    newRound =  parseInt(currentRound, 10) + 1
   }
 
   return {
-    closeRound: closeRound,
     "currentPhase": newPhase,
     "currentRound": newRound,
     "phaseStartTime": newStartTime.toISOString(),

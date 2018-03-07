@@ -21,8 +21,8 @@ const playerList = (props) => {
         <table className="pure-table pure-table-horizontal table-100">
           <thead>
             <tr>
-              <td>Name</td>
-              <td>Share</td>
+              <td>Address</td>
+              <td>Chips</td>
             </tr>
           </thead>
           <tbody>
@@ -31,7 +31,7 @@ const playerList = (props) => {
               return <tr key={player.userAddress}
                 style={{color: player.userAddress.toLowerCase() === currentAccount.toLowerCase() ? 'orange': ''}}>
                   <td>{player.userAddress.substring(0, 12)}...</td>
-                  <td>{tokenShare(player.chips, playerList)}</td>
+                  <td>{player.chips}</td>
               </tr>
             })}
 

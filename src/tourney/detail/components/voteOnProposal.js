@@ -46,10 +46,7 @@ class voteOnProposal extends React.Component {
   }
 
   descriptionString(item){
-    return '\"' + item.action
-    + ' ' + item.target.name
-    + (item.action === 'add' ? ' to' : ' from'  )
-    + ' list\"'
+    return (item.action === 'add' ? 'Add' : ' Remove') + ' ' + item.target.name
   }
 
   activeClass(item, vote){
@@ -77,7 +74,7 @@ class voteOnProposal extends React.Component {
               {this.props.proposalList.map(item => {
                 return <li style={{listItem: 'none'}} key={item._id}>
 
-                  <div className="game-panel">
+                  <div className="game-panel white-bg">
 
                     <button className={this.activeClass(item, 0)}
                       style={{float: 'right'}}
@@ -87,8 +84,9 @@ class voteOnProposal extends React.Component {
                       style={{float: 'right'}}
                       onClick={() => {this.submitVote(item, 1)}}>in favor</button>
 
-
-                    Proposal: {this.descriptionString(item)}
+                    <div style={{margin: '8px'}}>
+                      <span>{this.descriptionString(item)}</span>
+                    </div>
 
                   </div>
 

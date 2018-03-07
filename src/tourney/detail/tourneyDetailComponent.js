@@ -14,7 +14,6 @@ import VoteOnProposal from './components/voteOnProposal'
 import RoundResults from './components/roundResults'
 import RoundProgress from './components/roundProgress'
 import PlayerList from './components/playerList'
-import SelectTable from './components/selectTable'
 
 
 class FormComponent extends Component {
@@ -30,13 +29,8 @@ class FormComponent extends Component {
     // gameSocket.on('connect_failed', this.socketError)
     // gameSocket.on('reconnect_failed', this.socketError)
     gameSocket.on('reconnecting', this.socketError)
-    gameSocket.on('connect', data =>{
-      console.log('Game connected')
-    })
+    gameSocket.on('connect', data =>{ console.log('Game connected') })
     gameSocket.on('update', this.updateGameData.bind(this))
-
-
-
 
     this.state = {
       modalIsOpen: false,
@@ -44,6 +38,9 @@ class FormComponent extends Component {
       status: {
         currentRound: 0,
         currentPhase: ''
+      },
+      config: {
+        name: ''
       },
       items: [],
       playerList: [],
@@ -100,6 +97,7 @@ class FormComponent extends Component {
 
     if(gameData.status.gameInProgress){
       this.setState({
+        config: gameData.config,
         status: gameData.status,
         timeRemaining: gameData.status.timeRemaining,
         rounds: gameData.rounds,
@@ -110,7 +108,6 @@ class FormComponent extends Component {
           return prediction.round === gameData.status.currentRound
         }),
         userData: gameData.userData
-
       })
 
       // show counter display
@@ -286,6 +283,7 @@ class FormComponent extends Component {
 
         <div className="game-panel white-bg" style={{flex: '2'}}>
 
+          <h3>{this.state.config.name}</h3>
           <p>Tournament contract: 1-231-02391-23091-029</p>
           <p>Network: Rinkeby</p>
           <p>value: 123 ETH</p>
@@ -339,7 +337,7 @@ class FormComponent extends Component {
               {this.state.status.currentPhase === 'results' ?
 
                 <RoundResults
-                  resultsList={this.state.items}/>
+                  proposalList={this.state.predictions}/>
 
               :null}
               {this.state.status.currentPhase === 'complete' ?
