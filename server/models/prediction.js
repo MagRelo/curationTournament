@@ -15,6 +15,7 @@ var PredictionSchema = new Schema({
     descriptionString: String,
     target: Object,
     action: String,
+    value: Number,
     votes: [{type: Schema.Types.ObjectId, ref: 'Vote'}],
     agreement:  Number,
     outcome: Boolean
@@ -39,6 +40,7 @@ PredictionSchema.statics.addProposal = function(userAddress, data){
       type: 'proposal',
       action: data.action,
       target: data.target,
+      value: 100,
       signature: data.signature,
       descriptionString: data.descriptionString
     },
@@ -46,15 +48,17 @@ PredictionSchema.statics.addProposal = function(userAddress, data){
   )
 }
 
-PredictionSchema.methods.tallyVote = function() {
+PredictionSchema.methods.tallyVote = function(){
 
   // tally votes
-  const yesVotes = this.prediction.votes.reduce((total, item) => {
+  const yesVotes = this.votes.reduce((total, item) => {
     return total + item.vote
   }, 0)
 
   // calculate level of consensus
-  this.prediction.agreement =  Math.abs(yesVotes - (prediction.votes.length - yesVotes))
+  if(this.votes.length){
+    this.agreement =  (yesVotes / this.votes.length)
+  }
 
   // save
   return this.save()

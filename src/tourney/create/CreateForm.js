@@ -14,14 +14,27 @@ class CreateContractForm extends Component {
       contractOwner: '',
       oracleAddress: '',
       tournamentName: '',
-      playerWhitelist: [],
+      playerWhitelist: [
+        "0x863afa452F38966b54Cb1149D934e34670D0683a",
+        "0x106F681949E222D57A175cD85685E3bD9975b973",
+        "0xdf396910e693f7De31eF88d0090F2A4333ffcCF3"
+      ],
       newPlayer: '',
       rounds: 5,
       minDeposit: 0.1,
+      exchangeRate: 1
 
     }
   }
-  componentDidMount(){}
+  componentDidMount(){
+    fetch("https://api.coinmarketcap.com/v1/ticker/ethereum/?convert=USD")
+    .then(res => {return res.json()})
+    .then(data => {
+      this.setState({
+        exchangeRate: parseInt(data[0].price_usd, 10)
+      });
+    });
+  }
 
   // Form functions
   handleChange(event) {
@@ -66,13 +79,15 @@ class CreateContractForm extends Component {
     return +(Math.round(value + "e+" + places)  + "e-" + places);
   }
   formatEth(ether){
-    return 'Ξ' + this.round(ether, 5) + ' ETH'
+    console.log(ether);
+    console.log(this.state.exchangeRate);
+     return 'Ξ' + this.round(ether, 5) + ' ETH ($' +
+      this.round(this.state.exchangeRate * ether) + ')'
   }
-
   render() {
     return(
 
-      <div style={{marginTop: '1em'}}>
+      <div>
         <h2>Create new tournament</h2>
 
         <form className="pure-form" onSubmit={this.handleSubmit.bind(this)}>
@@ -88,31 +103,51 @@ class CreateContractForm extends Component {
 
             <label>Number of rounds</label>
             <input
-              className="pure-input-1-2"
+              className="pure-input-1"
               type="number"
               name="rounds"
+              min="0"
+              step="1"
               value={this.state.rounds}
               onChange={this.handleChange.bind(this)}></input>
 
-            <label>Min buy-in</label>
-            <input
-              className="pure-input-1-2"
-              type="number"
-              name="minDeposit"
-              value={this.state.minDeposit}
-              onChange={this.handleChange.bind(this)}>
-            </input>
-            <span style={{padding: '1em'}}>{this.formatEth(this.state.minDeposit)}</span>
 
           </fieldset>
+
+        <h3>Potential List Items</h3>
+        <fieldset>
+          <label className="pure-radio">
+            <input type="radio" checked={this.state.itemRadio}></input>Top 20 list from coincenter.io
+          </label>
+        </fieldset>
+
+
+        <h3>Buy-in</h3>
+        <p>Each player will have to deposit this amount to participate.</p>
+        <fieldset>
+          <label>Player Buy-in: {this.formatEth(this.state.minDeposit)}</label>
+          <input
+            className="pure-input-1"
+            type="number"
+            name="minDeposit"
+            min="0.01"
+            step="any"
+            value={this.state.minDeposit}
+            onChange={this.handleChange.bind(this)}>
+          </input>
+        </fieldset>
+
+
 
         <h3>Add Players</h3>
         <p>Add each player's address. Only whitelisted players will be able to deposit and participate.</p>
 
-        <div>
-          <ul style={{padding: 0}}>
-            {this.state.playerWhitelist.map((item, index) => {
-              return <li style={{listStyle: 'none', marginBottom: '0.5em'}} key={index}>
+        <ul style={{padding: 0}}>
+          {this.state.playerWhitelist.map((item, index) => {
+            return <li style={{listStyle: 'none', marginBottom: '0.5em'}} key={index}>
+
+              <div className="game-panel white-bg">
+
                 <button className="pure-button"
                   style={{float: 'right'}}
                   type="button"
@@ -121,27 +156,29 @@ class CreateContractForm extends Component {
                 <div style={{padding: '.5em 1em .5em 0'}}>
                   {item}
                 </div>
-              </li>
-            })}
-          </ul>
 
-          <div>
-            <input
-              className="pure-input-1-2"
-              type="text"
-              name="newPlayer"
-              value={this.state.newPlayer}
-              onChange={this.handleChange.bind(this)}>
-            </input>
+              </div>
 
-            <button
-              className="pure-button"
-              style={{marginBottom: '16px'}}
-              type="button"
-              disabled={!this.validPlayerAddress(this.state.newPlayer)}
-              onClick={this.addPlayer.bind(this)}> Add Player
-            </button>
-          </div>
+            </li>
+          })}
+        </ul>
+
+        <div>
+          <input
+            className="pure-input-1-2"
+            type="text"
+            name="newPlayer"
+            value={this.state.newPlayer}
+            onChange={this.handleChange.bind(this)}>
+          </input>
+
+          <button
+            className="pure-button"
+            style={{marginBottom: '16px'}}
+            type="button"
+            disabled={!this.validPlayerAddress(this.state.newPlayer)}
+            onClick={this.addPlayer.bind(this)}> Add Player
+          </button>
         </div>
 
         <hr></hr>

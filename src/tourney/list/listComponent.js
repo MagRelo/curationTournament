@@ -14,6 +14,22 @@ class TournamentList extends Component {
     this.props.loadList()
   }
 
+  displayStatus(status){
+
+    if(status.gameReady){
+      return 'Ready'
+    }
+
+    if(status.gameInProgress){
+      return 'In Progress'
+    }
+
+    if(status.gameComplete){
+      return 'Complete'
+    }
+
+  }
+
   render() {
     return(
       <main>
@@ -25,7 +41,7 @@ class TournamentList extends Component {
                 <Link to={"/tourney/" + game._id}>
                   <div className="tile-inner">
                     <h3>{game.config.name}</h3>
-                    <p> phase: {game.status.currentPhase} </p>
+                    <p> Status: {this.displayStatus(game.status)} </p>
                     <p> start: {game.status.phaseStartTime} </p>
                   </div>
                 </Link>

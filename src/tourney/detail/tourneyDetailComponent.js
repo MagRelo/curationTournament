@@ -29,7 +29,10 @@ class FormComponent extends Component {
     // gameSocket.on('connect_failed', this.socketError)
     // gameSocket.on('reconnect_failed', this.socketError)
     gameSocket.on('reconnecting', this.socketError)
-    gameSocket.on('connect', data =>{ console.log('Game connected') })
+    gameSocket.on('connect', data =>{
+      gameSocket.emit('update', {gameId: this.props.params.tournamentId})
+      console.log('Game connected')
+    })
     gameSocket.on('update', this.updateGameData.bind(this))
 
     this.state = {
@@ -68,7 +71,7 @@ class FormComponent extends Component {
     function watchForWeb3(){
       if(this.props.web3.web3Instance){
 
-        console.log('web3 ready');
+        console.log('web3 found');
         gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
         this.setState({ready: true})
 
@@ -92,7 +95,10 @@ class FormComponent extends Component {
 
     // check gameState
     if(gameData.status.gameReady){
-      this.setState({ })
+      this.setState({
+        config: gameData.config,
+        playerList: gameData.playerList
+      })
     }
 
     if(gameData.status.gameInProgress){
@@ -111,7 +117,7 @@ class FormComponent extends Component {
       })
 
       // show counter display
-      // this.startCountdown()
+      this.startCountdown()
     }
 
     if(gameData.status.gameComplete){
@@ -242,9 +248,10 @@ class FormComponent extends Component {
   }
   countDownTimer(){
     let nextTick = this.state.timeRemaining - 1
-    this.setState({timeRemaining: nextTick})
-    if(nextTick === 0){
+    this.setState({timeRemaining: Math.max(nextTick, 0)})
+    if(nextTick < 0){
       clearInterval(intervalId)
+      this.setState({timeRemaining: 0})
       gameSocket.emit('update', {gameId: this.props.params.tournamentId})
     }
   }
@@ -291,21 +298,22 @@ class FormComponent extends Component {
         </div>
 
         <div style={{flex: '9', display: 'flex', flexDirection: 'row'}}>
-
-
           <div style={{flex: '3', display: 'flex', flexDirection: 'column'}}>
 
             <div className="game-panel white-bg" style={{flex: '1'}}>
+
               <PlayerList
                 playerList={this.state.playerList}
                 currentAccount={this.props.userAddress || ''}/>
+
             </div>
             <div className="game-panel white-bg" style={{flex: '1'}}>
+
               <h3>Chat</h3>
+
             </div>
 
           </div>
-
           <div className="game-panel white-border" style={{flex: '7'}}>
 
             <RoundProgress
@@ -343,7 +351,6 @@ class FormComponent extends Component {
             :null}
 
           </div>
-
         </div>
 
       </main>

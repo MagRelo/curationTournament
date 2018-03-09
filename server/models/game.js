@@ -1,6 +1,8 @@
 'use strict';
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
+const bluebird = require('bluebird')
+
 
 const PredictionSchema = require('../models/prediction')
 
@@ -41,6 +43,102 @@ var GameSchema =  new Schema({
   {timestamps: true}
 );
 
+GameSchema.statics.closeRound = function(gameId){
+
+  let gameDoc = null
+
+  // get predictions
+  return this.findOne({_id: gameId})
+      .populate({
+        path: 'predictions',
+        model: 'Prediction',
+        select: '_id action target round userAddress value',
+        match: {action: {$ne: 'pass'}},
+        populate: {
+          path: 'votes',
+          model: 'Vote',
+          select: 'vote userAddress'
+        }
+      })
+      .then(gameDocResult => {
+        if(!gameDocResult){return console.log('no gameDoc!', gameId)}
+
+        // pass out of closure
+        gameDoc = gameDocResult
+
+        let promiseArray = []
+        gameDoc.predictions.forEach(prediction => {
+          // execute closeVote on all
+          promiseArray.push(prediction.tallyVote())
+        })
+
+        return bluebird.all(promiseArray)
+      })
+      .then(array => {
+
+        // rank by agreement
+        array.sort(function (a, b) {
+          return b.agreement - a.agreement;
+        })
+
+        // mark top three
+        const passNumber = 1
+        for(let i = 0; i < array.length; i++){
+          // true == success; top three succeed
+          array[i].outcome = (i < passNumber)
+        }
+
+        // save
+        let promiseArray = []
+        array.forEach(prediction => {
+          // save outcome of each prediction
+          promiseArray.push(prediction.save())
+        })
+
+        return bluebird.all(promiseArray)
+      })
+      .then(predictions => {
+
+        // update game doc with results
+        predictions
+          .filter(prediction => {return (prediction.round === gameDoc.status.currentRound)})
+          .forEach(prediction => {
+
+          // successful proposal
+          if(prediction.outcome){
+
+            // add item to list
+            gameDoc.itemList.push(prediction.target)
+
+            // find player that proposed it
+            const playerAddressIndex = gameDoc.playerList
+              .map(playerObj => playerObj.userAddress.toLowerCase())
+              .indexOf(prediction.userAddress.toLowerCase())
+
+            // credit player
+            gameDoc.playerList[playerAddressIndex].chips += prediction.value
+          }
+
+        })
+
+        // update playerBalances for votes
+
+        // for each player
+          // get player vote
+
+          // loop throu each propsal
+            // get consensus
+            // check vote against outcome
+
+
+        // update status
+        gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
+
+        return gameDoc.save()
+      })
+
+
+}
 
 GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
 
@@ -48,7 +146,7 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
       .populate({
         path: 'predictions',
         model: 'Prediction',
-        select: '_id action target round userAddress',
+        select: '_id action target round userAddress outcome agreement',
         match: {action: {$ne: 'pass'}},
         populate: {
           path: 'votes',
@@ -59,7 +157,7 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
       .then(gameDoc => {
         if(!gameDoc){return console.log('no gameDoc!', gameId)}
 
-        let needsSave = false
+        let needsSave, needsCalculate = false
 
         // get status
         const currentProposals = gameDoc.predictions
@@ -72,29 +170,34 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
             return (prediction.votes.length === gameDoc.playerList.length)
           })
 
+        // check of max time has elapsed
+        const phaseStart = moment(gameDoc.status.phaseStartTime)
+        const secondsElapsed = moment().diff(phaseStart, 'seconds')
+        const phaseExpired = ((gameDoc.config.lengthOfPhase - secondsElapsed) < 0)
+
+        // update time remaining
+        gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase - secondsElapsed
+
         // transition Status
-        if(gameDoc.status.currentPhase === 'proposals' && proposalsComplete){
-
-          gameDoc.status = transitionStatus(gameDoc.status, 30)
-          needsSave = true
-        }
-        if(gameDoc.status.currentPhase === 'votes' && votesComplete){
-
-          console.log('calculate');
-
-          gameDoc.status = transitionStatus(gameDoc.status, 30)
-          needsSave = true
-        }
-        if(gameDoc.status.currentPhase === 'results'){
-          // gameDoc.status = transitionStatus(gameDoc.status, 30)
-        }
-
-
-        if(needsSave){
+        if(gameDoc.status.currentPhase === 'proposals' && (proposalsComplete || phaseExpired)){
+          console.log(gameDoc.status.currentRound, '- proposals done');
+          gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
           return gameDoc.save()
-        } else {
-          return Promise.resolve(gameDoc)
         }
+
+        if(gameDoc.status.currentPhase === 'votes' && (votesComplete || phaseExpired)){
+          console.log(gameDoc.status.currentRound, '- votes done');
+          return this.closeRound(gameDoc._id)
+        }
+
+        if(gameDoc.status.currentPhase === 'results' && phaseExpired){
+          console.log(gameDoc.status.currentRound, '- results done');
+          gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
+          return gameDoc.save()
+        }
+
+        // default to just pass gameDoc as-is
+        return Promise.resolve(gameDoc)
       })
       .then(gameDoc => {
         return publicData(gameDoc, userAddress)
@@ -131,6 +234,8 @@ function publicData(gameDoc, userAddress){
           round: prediction.round,
           action: prediction.action,
           target: prediction.target,
+          outcome: prediction.outcome,
+          agreement: prediction.agreement,
           descriptionString: prediction.descriptionString,
           userVoted: prediction.votes.some(vote => {
             return vote.userAddress === userAddressCompare
@@ -153,11 +258,13 @@ function userVote(userAddress, votesArray){
   })
   return userVote
 }
-function transitionStatus(currentStatus, lengthOfPhase){
+function transitionStatus(currentStatus, lengthOfPhase, maxRounds){
 
   const newStartTime = new Date()
   let newPhase = ''
   let newRound = currentStatus.currentRound
+  let gameInProgress = true
+  let gameComplete = false
 
   if(currentStatus.currentPhase === 'proposals'){
     console.log('transition to votes');
@@ -168,16 +275,30 @@ function transitionStatus(currentStatus, lengthOfPhase){
     newPhase = 'results'
   }
   if(currentStatus.currentPhase === 'results'){
-    console.log('transition to results');
-    newPhase = 'proposals'
-    newRound =  parseInt(currentRound, 10) + 1
+
+    if(currentStatus.currentRound + 1 < maxRounds){
+      // continue game, increment round
+      console.log('transition to results');
+      newPhase = 'proposals'
+      newRound =  parseInt(currentStatus.currentRound, 10) + 1
+
+    } else {
+      // end game
+      newPhase = 'complete'
+      gameInProgress = false
+      gameComplete = true
+    }
+
   }
 
   return {
-    "currentPhase": newPhase,
-    "currentRound": newRound,
-    "phaseStartTime": newStartTime.toISOString(),
-    "timeRemaining" : lengthOfPhase,
-    "gameInProgress": true
+    currentRound: newRound,
+    currentPhase: newPhase,
+    phaseStartTime: newStartTime.toISOString(),
+    timeRemaining: lengthOfPhase,
+    gameReady: false,
+    gameInProgress: gameInProgress,
+    gameComplete: gameComplete
   }
+
 }

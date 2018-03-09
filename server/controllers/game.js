@@ -26,7 +26,7 @@ exports.createGame = (req, res) => {
   newGame.playerList = buildPlayerList(options.playerList)
 
   // TODO testing
-  newGame.status.gameInProgress = true
+  newGame.status.gameReady = true
   newGame.candidateList = candidateList
 
   newGame.save()
@@ -36,7 +36,7 @@ exports.createGame = (req, res) => {
 }
 
 exports.listGames = (req, res) => {
-  GameSchema.find({'status.gameComplete': false})
+  GameSchema.find({})
     .then(gameDoc => { res.json(gameDoc) })
     .catch(error => {
       console.log(error.message);

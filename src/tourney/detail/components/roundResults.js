@@ -7,6 +7,10 @@ const addProposal = (props) => {
     return (item.action === 'add' ? 'Add' : ' Remove') + ' ' + item.target.name
   }
 
+  function displayAsPercentage(ratio){
+    return (ratio * 100) + '%'
+  }
+
   return(
     <div className="game-panel">
 
@@ -16,7 +20,6 @@ const addProposal = (props) => {
           <thead>
             <tr>
               <td>Proposal</td>
-              <td>Consensus</td>
               <td>Agreement</td>
               <td>Outcome</td>
               <td>Proposal Payout</td>
@@ -26,10 +29,9 @@ const addProposal = (props) => {
             {proposalList.map(item =>{
               return <tr key={item._id}>
                   <td>{descriptionString(item)}</td>
-                  <td>{item.outcome}</td>
-                  <td>{item.agreement}</td>
-                  <td>Pass</td>
-                  <td>100</td>
+                  <td>{displayAsPercentage(item.agreement)}</td>
+                  <td>{item.outcome ? 'Pass' : 'Fail'}</td>
+                  <td>{item.outcome ? '100' : '0'}</td>
               </tr>
             })}
           </tbody>
