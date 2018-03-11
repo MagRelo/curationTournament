@@ -96,11 +96,15 @@ class FormComponent extends Component {
     console.log(gameData)
 
     // check gameState
-    if(gameData.status.gameState === 'ready'){
+    if(gameData.status.gameState === 'ready' ||
+        gameData.status.gameState === 'closed'){
+
       this.setState({
         config: gameData.config,
-        playerList: gameData.playerList
+        playerList: gameData.playerList,
+        items: gameData.itemList
       })
+
     }
 
     if(gameData.status.gameState === 'proposals' ||
@@ -354,7 +358,26 @@ class FormComponent extends Component {
             :null}
             {this.state.status.gameState === 'closed' ?
 
-              <p>Game Complete</p>
+
+              <div className="game-panel">
+                <h3> Final List </h3>
+
+                <ul style={{padding: 0}}>
+                  {this.state.items.map(item => {
+                    return <li style={{listItem: 'none'}} key={item._id}>
+
+                      <div className="game-panel white-bg">
+                        <div style={{margin: '8px'}}>
+                          <span>{this.descriptionString(item)}</span>
+                        </div>
+
+                      </div>
+
+                    </li>
+                  })}
+                </ul>
+
+              </div>
 
             :null}
 
