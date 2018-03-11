@@ -2,9 +2,6 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 const bluebird = require('bluebird')
-const StateMachine = require('javascript-state-machine');
-
-
 
 const PredictionSchema = require('../models/prediction')
 

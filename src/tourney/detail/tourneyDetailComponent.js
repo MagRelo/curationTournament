@@ -37,8 +37,8 @@ class FormComponent extends Component {
     gameSocket.on('update', this.updateGameData.bind(this))
 
     this.state = {
-      modalIsOpen: false,
-      timeRemaining: 44,
+      loading: false,
+      timeRemaining: -1,
       status: {
         currentRound: 0,
         gameState: ''
@@ -140,7 +140,13 @@ class FormComponent extends Component {
 
   }
   socketError(data){
-    console.log('error', data)
+    if(data > 5){
+      gameSocket.disconnect()
+      clearInterval(intervalId)
+      console.log('disconnecting')
+    } else {
+      console.log('reconnection attempts: ', data)
+    }
   }
 
 
@@ -276,18 +282,6 @@ class FormComponent extends Component {
     places = places || 4
     return +(Math.round(value + "e+" + places)  + "e-" + places);
   }
-  // displayWei(input){
-  //   let ethereum = ''
-  //   let wei = input
-  //   if(input){
-  //     if(typeof(input) === 'object'){
-  //       wei = wei.toNumber()
-  //     }
-  //     ethereum = this.round(web3.fromWei(wei, 'ether'), 5)
-  //   }
-  //   return 'Ξ' + ethereum + ' ETH ($' +
-  //    this.round(this.state.exchangeRate * web3.fromWei(wei, 'ether')) + ')'
-  // }
   format(input){
     if(typeof(input) === 'object'){
       input = input.toNumber()
@@ -333,7 +327,7 @@ class FormComponent extends Component {
             <RoundProgress
               roundList={this.state.rounds}
               timeRemaining={this.state.timeRemaining}
-              timeRemainingRatio={this.state.timeRemaining/this.state.config.lengthOfPhase}
+              lengthOfPhase={this.state.config.lengthOfPhase}
               status={this.state.status}/>
 
             {this.state.status.gameState === 'proposals' ?
