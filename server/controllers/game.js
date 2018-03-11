@@ -26,7 +26,6 @@ exports.createGame = (req, res) => {
   newGame.playerList = buildPlayerList(options.playerList)
 
   // TODO testing
-  newGame.status.gameReady = true
   newGame.candidateList = candidateList
 
   newGame.save()

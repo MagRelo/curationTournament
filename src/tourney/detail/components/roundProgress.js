@@ -10,20 +10,32 @@ const roundProgress = (props) => {
   return(
     <div className="game-panel">
 
-      <h2>{'Round ' + (status.currentRound + 1) + ': ' + status.currentPhase}</h2>
+      <h2>{'Round ' + (status.currentRound + 1) + ': ' + status.gameState}</h2>
 
-      <div className="progressbar" style={{transform: 'rotateY(180deg)'}}>
-        <Line
-          progress={timeRemainingRatio}
-          options={options}
-          initialAnimate={false}
-          containerStyle={containerStyle}
-          containerClassName={'.progressbar'} />
-      </div>
 
-      <div style={{textAlign: 'right'}}>
-        Time remaining: {timeRemaining}
-      </div>
+      {timeRemaining >= 0 ?
+
+        <div>
+          <div className="progressbar" style={{transform: 'rotateY(180deg)'}}>
+            <Line
+              progress={timeRemainingRatio}
+              options={options}
+              initialAnimate={false}
+              containerStyle={containerStyle}
+              containerClassName={'.progressbar'} />
+          </div>
+
+          <div style={{textAlign: 'right'}}>
+            Time remaining: {timeRemaining}
+          </div>
+        </div>
+
+      :
+
+      <div className="spinner"></div>
+    }
+
+
 
     </div>
   )

@@ -2,6 +2,8 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 const bluebird = require('bluebird')
+const StateMachine = require('javascript-state-machine');
+
 
 
 const PredictionSchema = require('../models/prediction')
@@ -15,19 +17,17 @@ var GameSchema =  new Schema({
       name: {type: String},
       rounds: {type: Number},
       minDeposit: {type: Number},
-      lengthOfPhase: {type: Number, default: 30}
+      timedGame: {type: Boolean, default: false},
+      lengthOfPhase: {type: Number, default: 15},
+      contractAddress: {type: String},
+      contractNetwork: {type: String},
+      contractValue: {type: String},
     },
     status: {
+      gameState: {type: String, default: 'ready'},
       currentRound: {type: Number, default: 0},
-      currentPhase: {type: String, default: 'proposals'},
-      phaseStartTime: {type: Date, default: ()=>{
-        const now = new Date
-        return moment(now).add(10, 'm').toDate()
-      }},
+      phaseStartTime: {type: Date},
       timeRemaining: {type: Number, default: 30},
-      gameReady: {type: Boolean, default: false},
-      gameInProgress: {type: Boolean, default: false},
-      gameComplete: {type: Boolean, default: false}
     },
     rounds: [{
       index: Number,
@@ -110,13 +110,17 @@ GameSchema.statics.closeRound = function(gameId){
             // add item to list
             gameDoc.itemList.push(prediction.target)
 
+            // TODO Removes
+
             // find player that proposed it
             const playerAddressIndex = gameDoc.playerList
               .map(playerObj => playerObj.userAddress.toLowerCase())
               .indexOf(prediction.userAddress.toLowerCase())
+            const playerObject = gameDoc.playerList[playerAddressIndex]
 
             // credit player
-            gameDoc.playerList[playerAddressIndex].chips += prediction.value
+            playerObject.chips += prediction.value
+            gameDoc.playerList[playerAddressIndex] = playerObject
           }
 
         })
@@ -131,9 +135,12 @@ GameSchema.statics.closeRound = function(gameId){
             // check vote against outcome
 
 
-        // update status
-        gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
+        const newPhaseTime = new Date()
+        gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
+        gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
+        gameDoc.status.gameState = 'results'
 
+        // update status
         return gameDoc.save()
       })
 
@@ -155,49 +162,95 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
         }
       })
       .then(gameDoc => {
-        if(!gameDoc){return console.log('no gameDoc!', gameId)}
-
-        let needsSave, needsCalculate = false
+        if(!gameDoc){throw {error: 'no gameDoc!', id: gameId}}
 
         // get status
         const currentProposals = gameDoc.predictions
           .filter(prediction => {
             return (prediction.round === gameDoc.status.currentRound)
           })
-        const proposalsComplete = (currentProposals.length === gameDoc.playerList.length)
-        const votesComplete = currentProposals
-          .every(prediction => {
-            return (prediction.votes.length === gameDoc.playerList.length)
-          })
 
-        // check of max time has elapsed
+
+        const proposalsComplete = false
+        const votesComplete = false
+        // const proposalsComplete = (currentProposals.length === gameDoc.playerList.length)
+        // const votesComplete = currentProposals
+        //   .every(prediction => {
+        //     return (prediction.votes.length === gameDoc.playerList.length)
+        //   })
+
+        // check if max time has elapsed
         const phaseStart = moment(gameDoc.status.phaseStartTime)
         const secondsElapsed = moment().diff(phaseStart, 'seconds')
         const phaseExpired = ((gameDoc.config.lengthOfPhase - secondsElapsed) < 0)
+        gameDoc.status.timeRemaining = Math.max(gameDoc.config.lengthOfPhase - secondsElapsed, -1)
 
-        // update time remaining
-        gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase - secondsElapsed
+        // switch on game state
+        switch (gameDoc.status.gameState) {
+          case 'ready':
 
-        // transition Status
-        if(gameDoc.status.currentPhase === 'proposals' && (proposalsComplete || phaseExpired)){
-          console.log(gameDoc.status.currentRound, '- proposals done');
-          gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
-          return gameDoc.save()
-        }
+            // start phases
+            const newPhaseTime = new Date()
+            gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
+            gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
+            gameDoc.status.gameState = 'proposals'
+            return gameDoc.save()
 
-        if(gameDoc.status.currentPhase === 'votes' && (votesComplete || phaseExpired)){
-          console.log(gameDoc.status.currentRound, '- votes done');
-          return this.closeRound(gameDoc._id)
-        }
+            break;
+          case 'proposals':
 
-        if(gameDoc.status.currentPhase === 'results' && phaseExpired){
-          console.log(gameDoc.status.currentRound, '- results done');
-          gameDoc.status = transitionStatus(gameDoc.status, 30, gameDoc.config.rounds)
-          return gameDoc.save()
+            if(proposalsComplete || phaseExpired){
+              console.log('Round ' + gameDoc.status.currentRound + ': proposals done');
+
+              const newPhaseTime = new Date()
+              gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
+              gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
+              gameDoc.status.gameState = 'voting'
+              return gameDoc.save()
+            }
+
+            break;
+          case 'voting':
+
+            if(votesComplete || phaseExpired){
+              console.log('Round ' + gameDoc.status.currentRound + ': votes done');
+              return this.closeRound(gameDoc._id)
+            }
+
+            break;
+          case 'results':
+
+            if(phaseExpired){
+              console.log('Round ' + gameDoc.status.currentRound + ': results done');
+
+
+              // close game?
+              if(gameDoc.status.currentRound + 1 >= gameDoc.config.rounds){
+                gameDoc.status.timeRemaining = 0
+                gameDoc.status.gameState = 'closed'
+                return gameDoc.save()
+              }
+
+              // change phase, increment round
+              const newPhaseTime = new Date()
+              gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
+              gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
+              gameDoc.status.gameState = 'proposals'
+              gameDoc.status.currentRound = gameDoc.status.currentRound + 1
+              return gameDoc.save()
+
+            }
+
+            break;
+          case 'closed':
+            console.log('game closed');
+            break;
+          default:
+            console.log('default');
         }
 
         // default to just pass gameDoc as-is
-        return Promise.resolve(gameDoc)
+        return gameDoc.save()
       })
       .then(gameDoc => {
         return publicData(gameDoc, userAddress)
@@ -263,42 +316,15 @@ function transitionStatus(currentStatus, lengthOfPhase, maxRounds){
   const newStartTime = new Date()
   let newPhase = ''
   let newRound = currentStatus.currentRound
-  let gameInProgress = true
-  let gameComplete = false
-
-  if(currentStatus.currentPhase === 'proposals'){
-    console.log('transition to votes');
-    newPhase = 'votes'
-  }
-  if(currentStatus.currentPhase === 'votes'){
-    console.log('transition to results');
-    newPhase = 'results'
-  }
-  if(currentStatus.currentPhase === 'results'){
-
-    if(currentStatus.currentRound + 1 < maxRounds){
-      // continue game, increment round
-      console.log('transition to results');
-      newPhase = 'proposals'
-      newRound =  parseInt(currentStatus.currentRound, 10) + 1
-
-    } else {
-      // end game
-      newPhase = 'complete'
-      gameInProgress = false
-      gameComplete = true
-    }
-
-  }
+  let gameState = currentStatus.gameState
 
   return {
     currentRound: newRound,
-    currentPhase: newPhase,
+    gameState: newPhase,
     phaseStartTime: newStartTime.toISOString(),
     timeRemaining: lengthOfPhase,
     gameReady: false,
-    gameInProgress: gameInProgress,
-    gameComplete: gameComplete
+    gameState: gameState
   }
 
 }

@@ -79,8 +79,6 @@ class CreateContractForm extends Component {
     return +(Math.round(value + "e+" + places)  + "e-" + places);
   }
   formatEth(ether){
-    console.log(ether);
-    console.log(this.state.exchangeRate);
      return 'Ξ' + this.round(ether, 5) + ' ETH ($' +
       this.round(this.state.exchangeRate * ether) + ')'
   }

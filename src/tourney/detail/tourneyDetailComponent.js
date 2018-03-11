@@ -30,21 +30,20 @@ class FormComponent extends Component {
     // gameSocket.on('reconnect_failed', this.socketError)
     gameSocket.on('reconnecting', this.socketError)
     gameSocket.on('connect', data =>{
-      gameSocket.emit('update', {gameId: this.props.params.tournamentId})
+
+      // gameSocket.emit('update', {gameId: this.props.params.tournamentId})
       console.log('Game connected')
     })
     gameSocket.on('update', this.updateGameData.bind(this))
 
     this.state = {
       modalIsOpen: false,
-      timeRemaining: 30,
+      timeRemaining: 44,
       status: {
         currentRound: 0,
-        currentPhase: ''
+        gameState: ''
       },
-      config: {
-        name: ''
-      },
+      config: { name: '' },
       items: [],
       playerList: [],
       candidateList: [],
@@ -61,6 +60,8 @@ class FormComponent extends Component {
     if(this.props.web3.web3Instance){
 
       console.log('web3 ready');
+
+
       gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
       this.setState({ready: true})
 
@@ -72,6 +73,7 @@ class FormComponent extends Component {
       if(this.props.web3.web3Instance){
 
         console.log('web3 found');
+
         gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
         this.setState({ready: true})
 
@@ -94,14 +96,17 @@ class FormComponent extends Component {
     console.log(gameData)
 
     // check gameState
-    if(gameData.status.gameReady){
+    if(gameData.status.gameState === 'ready'){
       this.setState({
         config: gameData.config,
         playerList: gameData.playerList
       })
     }
 
-    if(gameData.status.gameInProgress){
+    if(gameData.status.gameState === 'proposals' ||
+        gameData.status.gameState === 'voting' ||
+        gameData.status.gameState === 'results'){
+
       this.setState({
         config: gameData.config,
         status: gameData.status,
@@ -117,15 +122,20 @@ class FormComponent extends Component {
       })
 
       // show counter display
-      this.startCountdown()
+      if(gameData.status.timeRemaining > 0){
+        this.startCountdown()
+      }
+
     }
 
-    if(gameData.status.gameComplete){
+    if(gameData.status.gameState === 'closed'){
       this.setState({
         status: gameData.status,
         rounds: gameData.rounds,
         playerList: gameData.playerList
       })
+
+      this.endCountdown()
     }
 
   }
@@ -246,15 +256,18 @@ class FormComponent extends Component {
     clearInterval(intervalId)
     intervalId = setInterval(this.countDownTimer.bind(this), 1000)
   }
+  endCountdown(){
+    clearInterval(intervalId)
+  }
   countDownTimer(){
     let nextTick = this.state.timeRemaining - 1
-    this.setState({timeRemaining: Math.max(nextTick, 0)})
-    if(nextTick < 0){
-      clearInterval(intervalId)
+    this.setState({timeRemaining: nextTick})
+    if(nextTick <= 0 && nextTick % 2 === 0){
       this.setState({timeRemaining: 0})
       gameSocket.emit('update', {gameId: this.props.params.tournamentId})
     }
   }
+
   filterCandidates(baseArray, removeArray){
     const idArray = removeArray.map(item => item.symbol)
     return baseArray.filter(baseItem => !~idArray.indexOf(baseItem.symbol))
@@ -291,9 +304,10 @@ class FormComponent extends Component {
         <div className="game-panel white-bg" style={{flex: '2'}}>
 
           <h3>{this.state.config.name}</h3>
-          <p>Tournament contract: 1-231-02391-23091-029</p>
-          <p>Network: Rinkeby</p>
-          <p>value: 123 ETH</p>
+          <p>Contract: {this.state.config.contractAddress}</p>
+          <p>Network: {this.state.config.contractNetwork}</p>
+          <p>Value: {this.state.config.contractValue}</p>
+          <p>Status: {this.state.status.currentStatus}</p>
 
         </div>
 
@@ -319,10 +333,10 @@ class FormComponent extends Component {
             <RoundProgress
               roundList={this.state.rounds}
               timeRemaining={this.state.timeRemaining}
-              timeRemainingRatio={this.state.timeRemaining/30}
+              timeRemainingRatio={this.state.timeRemaining/this.state.config.lengthOfPhase}
               status={this.state.status}/>
 
-            {this.state.status.currentPhase === 'proposals' ?
+            {this.state.status.gameState === 'proposals' ?
 
               <AddProposal
                 candidateList={this.state.candidateList}
@@ -331,22 +345,22 @@ class FormComponent extends Component {
                 userData={this.state.userData}/>
 
             :null}
-            {this.state.status.currentPhase === 'votes' ?
+            {this.state.status.gameState === 'voting' ?
 
               <VoteOnProposal
                 proposalList={this.state.predictions}
                 submitVote={this.submitVote.bind(this)}/>
 
             :null}
-            {this.state.status.currentPhase === 'results' ?
+            {this.state.status.gameState === 'results' ?
 
               <RoundResults
                 proposalList={this.state.predictions}/>
 
             :null}
-            {this.state.status.currentPhase === 'complete' ?
+            {this.state.status.gameState === 'closed' ?
 
-              <p>Complete</p>
+              <p>Game Complete</p>
 
             :null}
 
