@@ -110,10 +110,12 @@ GameSchema.statics.closeRound = function(gameId){
             // TODO Removes
 
             // find player that proposed it
-            const playerAddressIndex = gameDoc.playerList
-              .map(playerObj => playerObj.userAddress.toLowerCase())
-              .indexOf(prediction.userAddress.toLowerCase())
-            const playerObject = gameDoc.playerList[playerAddressIndex]
+            // const playerAddressIndex = gameDoc.playerList
+            //   .map(playerObj => playerObj.userAddress.toLowerCase())
+            //   .indexOf(prediction.userAddress.toLowerCase())
+            // const playerObject = gameDoc.playerList[playerAddressIndex]
+
+            const player = gameDoc.playerList.userAddress(prediction.userAddress)
 
             // credit player
             playerObject.chips += prediction.value
@@ -167,20 +169,31 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
             return (prediction.round === gameDoc.status.currentRound)
           })
 
-
-        const proposalsComplete = false
-        const votesComplete = false
-        // const proposalsComplete = (currentProposals.length === gameDoc.playerList.length)
-        // const votesComplete = currentProposals
-        //   .every(prediction => {
-        //     return (prediction.votes.length === gameDoc.playerList.length)
-        //   })
-
-        // check if max time has elapsed
+        // setup how rounds advance
         const phaseStart = moment(gameDoc.status.phaseStartTime)
         const secondsElapsed = moment().diff(phaseStart, 'seconds')
-        const phaseExpired = ((gameDoc.config.lengthOfPhase - secondsElapsed) < 0)
-        gameDoc.status.timeRemaining = Math.max(gameDoc.config.lengthOfPhase - secondsElapsed, -1)
+
+        let phaseExpired = false
+        let proposalsComplete = false
+        let votesComplete = false
+
+        // advance on timer for tmed games & results phase
+        if(gameDoc.config.timedGame || gameDoc.status.gameState === 'results'){
+
+          phaseExpired = ((gameDoc.config.lengthOfPhase - secondsElapsed) < 0)
+          gameDoc.status.timeRemaining = Math.max(gameDoc.config.lengthOfPhase - secondsElapsed, -1)
+
+        } else {
+
+          proposalsComplete = (currentProposals.length === gameDoc.playerList.length)
+          votesComplete = currentProposals
+            .every(prediction => {
+              return (prediction.votes.length === gameDoc.playerList.length)
+            })
+
+        }
+
+
 
         // switch on game state
         switch (gameDoc.status.gameState) {

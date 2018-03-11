@@ -329,9 +329,7 @@ class FormComponent extends Component {
           <div className="game-panel white-border" style={{flex: '7'}}>
 
             <RoundProgress
-              roundList={this.state.rounds}
-              timeRemaining={this.state.timeRemaining}
-              lengthOfPhase={this.state.config.lengthOfPhase}
+              config={this.state.config}
               status={this.state.status}/>
 
             {this.state.status.gameState === 'proposals' ?

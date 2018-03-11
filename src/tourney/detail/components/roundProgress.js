@@ -2,7 +2,7 @@ import React from 'react'
 import {Line} from 'react-progressbar.js'
 
 const roundProgress = (props) => {
-  const {roundList, timeRemaining, lengthOfPhase, status} = props
+  const {config, status} = props
 
   // progress bar options
   const options = { strokeWidth: 0.5, color: '#ffffff' }
@@ -28,14 +28,14 @@ const roundProgress = (props) => {
 
       <h2>{displayText(status)}</h2>
 
-        {status.gameState === 'proposals' ||
+        {(status.gameState === 'proposals' ||
           status.gameState === 'voting' ||
-          status.gameState === 'results'  ?
+          status.gameState === 'results')  &&  config.timedGame ?
 
           <div>
             <div className="progressbar" style={{transform: 'rotateY(180deg)'}}>
               <Line
-                progress={Math.max(timeRemaining/lengthOfPhase, 0)}
+                progress={Math.max(status.timeRemaining/config.lengthOfPhase, 0)}
                 initialAnimate={false}
                 options={options}
                 containerStyle={containerStyle}
@@ -44,8 +44,8 @@ const roundProgress = (props) => {
 
             <div style={{textAlign: 'right'}}>
 
-              {timeRemaining > 0 ?
-                <label>Time remaining: {timeRemaining}</label>
+              {status.timeRemaining > 0 ?
+                <label>Time remaining: {status.timeRemaining}</label>
               :
                 <div>
                   <label style={{float: 'right',  marginRight: '1.67em'}}>Loading...</label>
