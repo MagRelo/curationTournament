@@ -21,6 +21,7 @@ exports.createGame = (req, res) => {
   newGame.config.oracleAddress = options.oracleAddress
   newGame.config.minDeposit = options.minDeposit
   newGame.config.rounds = options.rounds
+  newGame.config.timedGame = options.timedGame
 
   newGame.rounds = buildRounds(options.rounds)
   newGame.playerList = buildPlayerList(options.playerList)

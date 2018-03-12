@@ -22,7 +22,8 @@ class CreateContractForm extends Component {
       newPlayer: '',
       rounds: 5,
       minDeposit: 0.1,
-      exchangeRate: 1
+      exchangeRate: 1,
+      gameType: 'push'
 
     }
   }
@@ -48,6 +49,7 @@ class CreateContractForm extends Component {
       contractOwner: this.props.userAddress,
       oracleAddress: 'asdnfaosdifnasdoif',
       name: this.state.tournamentName,
+      timedGame: (this.state.gameType === 'timed'),
       minDeposit: this.state.minDeposit,
       rounds: this.state.rounds,
       playerList: this.state.playerWhitelist
@@ -109,6 +111,19 @@ class CreateContractForm extends Component {
               value={this.state.rounds}
               onChange={this.handleChange.bind(this)}></input>
 
+            <label>Game type</label>
+            <label className="pure-radio">
+              <input type="radio"
+                checked={this.state.gameType === 'push'}
+                onClick={()=>{this.setState({gameType: 'push'})}}
+                ></input>Push game
+            </label>
+            <label className="pure-radio">
+              <input type="radio"
+                checked={this.state.gameType === 'timed'}
+                onClick={()=>{this.setState({gameType: 'timed'})}}
+                ></input>Timed game
+            </label>
 
           </fieldset>
 

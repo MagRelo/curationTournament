@@ -233,22 +233,23 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
             if(phaseExpired){
               console.log('Round ' + gameDoc.status.currentRound + ': results done');
 
-
               // close game?
               if(gameDoc.status.currentRound + 1 >= gameDoc.config.rounds){
+
                 gameDoc.status.timeRemaining = 0
                 gameDoc.status.gameState = 'closed'
-                return gameDoc.save()
+
+              } else {
+                // change phase, increment round
+                const newPhaseTime = new Date()
+                gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
+                gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
+                gameDoc.status.gameState = 'proposals'
+                gameDoc.status.currentRound = gameDoc.status.currentRound + 1
+
               }
 
-              // change phase, increment round
-              const newPhaseTime = new Date()
-              gameDoc.status.phaseStartTime = newPhaseTime.toISOString()
-              gameDoc.status.timeRemaining = gameDoc.config.lengthOfPhase
-              gameDoc.status.gameState = 'proposals'
-              gameDoc.status.currentRound = gameDoc.status.currentRound + 1
               return gameDoc.save()
-
             }
 
             break;
@@ -260,7 +261,7 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
         }
 
         // default to just pass gameDoc as-is
-        return gameDoc.save()
+        return gameDoc
       })
       .then(gameDoc => {
         return publicData(gameDoc, userAddress)

@@ -167,8 +167,10 @@ form > p {
   margin-top: 0.5em;
   margin-bottom: 0.2em;
 }
-.pure-form input[type="text"]:focus {
-  border-color: #0c1a2b;
+.pure-form input[type="text"],
+.pure-form input[type="number"] {
+  border: 1px solid #177B9F;
+  box-shadow: inset 0 1px 3px #177B9F;
 }
 .pure-form input[type="radio"] {
     margin-right: 1em;
