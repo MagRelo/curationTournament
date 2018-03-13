@@ -57,7 +57,7 @@ PredictionSchema.methods.tallyVote = function(){
 
   // calculate level of consensus
   if(this.votes.length){
-    this.agreement =  (yesVotes / this.votes.length)
+    this.agreement = Number((Math.round((yesVotes / this.votes.length) + "e" + 2)  + "e-" + 2));
   }
 
   // save

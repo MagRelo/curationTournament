@@ -49,6 +49,9 @@ class FormComponent extends Component {
       candidateList: [],
       predictions: [],
       rounds: [],
+      userData: {
+        votes: []
+      }
     }
   }
 
@@ -127,7 +130,7 @@ class FormComponent extends Component {
 
       // show counter display
       if(gameData.status.timeRemaining > 0){
-        this.startCountdown()
+        // this.startCountdown()
       }
 
     }
@@ -284,7 +287,7 @@ class FormComponent extends Component {
   }
   round(value, places){
     places = places || 4
-    return +(Math.round(value + "e+" + places)  + "e-" + places);
+    return Number((Math.round(value + "e" + places)  + "e-" + places));
   }
   format(input){
     if(typeof(input) === 'object'){
@@ -351,7 +354,8 @@ class FormComponent extends Component {
             {this.state.status.gameState === 'results' ?
 
               <RoundResults
-                proposalList={this.state.predictions}/>
+                proposalList={this.state.predictions}
+                votesList={this.state.userData.userVotes.filter(vote => vote.round === this.state.status.currentRound)}/>
 
             :null}
             {this.state.status.gameState === 'closed' ?

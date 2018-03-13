@@ -78,7 +78,7 @@ class CreateContractForm extends Component {
   }
   round(value, places){
     places = places || 4
-    return +(Math.round(value + "e+" + places)  + "e-" + places);
+    return Number((Math.round(value + "e" + places)  + "e-" + places));
   }
   formatEth(ether){
      return 'Ξ' + this.round(ether, 5) + ' ETH ($' +

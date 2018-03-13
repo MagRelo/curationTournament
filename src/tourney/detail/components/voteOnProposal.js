@@ -53,7 +53,7 @@ class voteOnProposal extends React.Component {
 
     let defaultStyle = 'pure-button'
 
-    if(item.userVoted && item.vote == vote){
+    if(item.userVoted && item.userVote == vote){
       defaultStyle += ' pure-button-active'
     }
 
@@ -78,11 +78,11 @@ class voteOnProposal extends React.Component {
 
                     <button className={this.activeClass(item, 0)}
                       style={{float: 'right'}}
-                      onClick={() => {this.submitVote(item, 0)}}>against</button>
+                      onClick={() => {this.submitVote(item, 0)}}>group will disagree</button>
 
                     <button className={this.activeClass(item, 1)}
                       style={{float: 'right'}}
-                      onClick={() => {this.submitVote(item, 1)}}>in favor</button>
+                      onClick={() => {this.submitVote(item, 1)}}>group will agree</button>
 
                     <div style={{margin: '8px'}}>
                       <span>{this.descriptionString(item)}</span>

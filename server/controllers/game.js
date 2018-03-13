@@ -180,6 +180,8 @@ exports.handleVote = (game, socket, data) => {
       })
       .then(voteResponse => {
 
+        // TODO this seems whack
+
         // add vote to prediction
         if(!~predictionDoc.votes.indexOf(voteResponse._id)){
           predictionDoc.votes.push(voteResponse._id)

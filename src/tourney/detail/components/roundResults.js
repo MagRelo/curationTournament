@@ -1,7 +1,7 @@
 import React from 'react'
 
 const addProposal = (props) => {
-  const {proposalList} = props
+  const {proposalList, votesList} = props
 
   function descriptionString(item){
     return (item.action === 'add' ? 'Add' : ' Remove') + ' ' + item.target.name
@@ -45,7 +45,7 @@ const addProposal = (props) => {
             <tr>
               <td>Proposal</td>
               <td>Your Vote</td>
-              <td>Consensus</td>
+              <td>Agreement</td>
               <td>Voting Payout</td>
             </tr>
           </thead>
@@ -53,9 +53,9 @@ const addProposal = (props) => {
             {proposalList.map(item =>{
               return <tr key={item._id}>
                   <td>{descriptionString(item)}</td>
-                  <td>{item.vote ? 'in favor' : 'against'}</td>
-                  <td>in favor</td>
-                  <td>10</td>
+                  <td>{item.userVote ? 'group will agree' : 'group will disagree'}</td>
+                  <td>{displayAsPercentage(item.agreement)}</td>
+                  <td>{item.userPayout}</td>
               </tr>
             })}
           </tbody>
