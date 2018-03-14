@@ -45,11 +45,8 @@ class App extends Component {
 
           <ul className="pure-menu-list navbar-right">
             <li className="pure-menu-item">
-              <Link activeStyle={{ color: '#FF5934' }} to="/tourney/list" className="pure-menu-link">List</Link>
+              <Link activeStyle={{ color: '#FF5934' }} to="/" className="pure-menu-link">Home</Link>
            </li>
-           <li className="pure-menu-item">
-             <Link activeStyle={{ color: '#FF5934' }} to="/tourney/add" className="pure-menu-link">+ New</Link>
-          </li>
           </ul>
         </nav>
 

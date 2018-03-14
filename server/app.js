@@ -21,7 +21,7 @@ var config = require('./config/environment');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const mongoConfig = {
-  uri: process.env.MONGODB_URL_INT || 'mongodb://127.0.0.1:27017/tourney',
+  uri: process.env.MONGODB_URL_INT || 'mongodb://127.0.0.1:27017/cansense',
   options: {
     useMongoClient: true
   }
