@@ -16,7 +16,7 @@ function displayPercent(value){
 }
 
 
-function ImageButton(props){
+function ResultsPanelItem(props){
   const {name, imgUrl, selected, row, column, submitVote} = props
 
   const votePercentage = Math.random()
@@ -82,7 +82,7 @@ class resultsPanel extends React.Component {
 
           {this.props.options.map(option => {
 
-            return <ImageButton
+            return <ResultsPanelItem
                     key={option.name}
                     name={option.name}
                     imgUrl={option.imgUrl}
