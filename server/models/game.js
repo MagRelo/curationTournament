@@ -4,46 +4,109 @@ var mongoose = require('mongoose'),
 const bluebird = require('bluebird')
 const moment = require('moment')
 
-const PredictionSchema = require('../models/prediction')
+var BaseSchema =  new Schema({
+    contractAddress: {type: String}, // from ENV
+    contractNetwork: {type: String}, // from ENV
+    lengthOfPhase: {type: Number, default: 15}, // from ENV
+    active: {type: Boolean, default: true},
 
+    // contract data, update on interval
+    ownerAddress: {type: String},
+    oracleAddress: {type: String},
+    contractValue: {type: String},
+    minDeposit: {type: Number},
+    contributors: [{type: Schema.Types.ObjectId, ref: 'User'}],
 
-var GameSchema =  new Schema({
-    config: {
-      ownerAddress: {type: String},
-      oracleAddress: {type: String},
-      name: {type: String},
-      rounds: {type: Number},
-      minDeposit: {type: Number},
-      timedGame: {type: Boolean, default: false},
-      lengthOfPhase: {type: Number, default: 15},
-      contractAddress: {type: String},
-      contractNetwork: {type: String},
-      contractValue: {type: String},
-    },
-    status: {
-      gameState: {type: String, default: 'ready'},
-      currentRound: {type: Number, default: 0},
-      phaseStartTime: {type: Date},
-      timeRemaining: {type: Number, default: 30},
-    },
-    rounds: [{
-      index: Number,
-      roundNumber: Number,
-      proposalsClosed: Boolean,
-      votesClosed: Boolean
-    }],
-    playerList: [{
-      chips: Number,
-      userAddress: String
-    }],
-    candidateList: [],
-    itemList: [],
-    predictions: [{type: Schema.Types.ObjectId, ref: 'Prediction'}]
+    // game data - push
+    state: {type: String, default: 'ready'},
+    currentQuestion: {type: Schema.Types.ObjectId, ref: 'Question'},
+    questionStartTime: {type: Date},
+    phase: {type: String},
+    phaseStartTime: {type: Date},
   },
   {timestamps: true}
 );
 
-GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
+BaseSchema.methods.nextQuestion = function(){
+
+  // get oldest unused question
+  return Question.findOne({'hasBeenUsed': false}).sort({"createdAt": 1}).limit(1)
+    .then(question => {
+      if(!question) throw {'error': 'no question'}
+
+      const start = new Date()
+      this.currentQuestion = question._id
+      this.questionStartTime = start
+      this.phase = 'question'
+      this.phaseStartTime = start
+
+      return this.save()
+    })
+
+}
+
+BaseSchema.methods.nextPhase = function(phase){
+
+  if(this.phase === 'question'){
+
+    return Question.calculateAnswers(this.currentQuestion)
+      .then(results => {
+
+        const start = new Date()
+        this.phase = 'results'
+        this.phaseStartTime = start
+
+        return this.save()
+      })
+
+  } else {
+
+    return this.nextQuestion()
+  }
+
+
+}
+
+BaseSchema.statics.publicData = function(){
+
+  return this.findOne({'active': true})
+    .populate({
+      path: 'currentQuestion',
+      model: 'Question',
+      select: '_id question options'
+    })
+    .then(gameData =>{
+      if(!gameData) throw {'error': 'no question'}
+
+      return {
+        gameData: gameData,
+        userData: null
+      }
+    })
+
+}
+
+BaseSchema.statics.userData = function(userAddress){
+
+  return bluebird.all([
+      this.findOne({'active': true})
+        .populate({
+          path: 'currentQuestion',
+          model: 'Question',
+          select: '_id question options'
+        }),
+      User.findOne({'userAddress': userAddress})
+    ])
+    .then(array =>{
+      return {
+        gameData: array[0],
+        userData: array[1]
+      }
+    })
+
+}
+
+BaseSchema.statics.updateAndFetch = function(gameId, userAddress) {
 
   return this.findOne({_id: gameId})
       .populate({
@@ -278,7 +341,7 @@ GameSchema.statics.updateAndFetch = function(gameId, userAddress) {
 
 };
 
-module.exports = mongoose.model('Game', GameSchema);
+module.exports = mongoose.model('Game', BaseSchema);
 
 // Helpers
 // --------------

@@ -1,28 +1,58 @@
 'use strict';
 
-var utils = require('../config/utils')
-
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 var QuestionSchema = new Schema({
-    prompt: String,
-    options: {
-      1: {},
-      2: {},
-      3: {},
-      4: {}
-    },
-    playerAnswers: [{}],
-    results: {
-      1: Number,
-      2: Number,
-      3: Number,
-      4: Number
-    },
-    winner: Number
+    question: String,
+    options: [{
+      name: String,
+      imgUrl: String,
+      agreement: Number
+    }],
+    answers: [{type: Schema.Types.ObjectId, ref: 'Answer'}],
+    winningAnswerIndex: {type: Number, default: null},
+    hasBeenUsed: Boolean
   },
   {timestamps: true}
 );
+
+QuestionSchema.methods.calculateAnswers = function(){
+
+  // get answers (4 queries?)
+  const promiseArray = []
+  this.options.forEach((option, index) => {
+    promiseArray.push(
+      Answer.find({questionId: this._id, 'answerIndex': index}).count()
+    )
+  })
+
+  return promiseArray
+    .then(optionArray => {
+
+      // [12, 45, 100, 444]
+      const totalVotes = optionArray.reduce((total, item) => {total + item}, 0)
+
+      const agreementArray = optionArray.map((count, index) => {
+        return {
+          index: index,
+          votes: count,
+          agreement: (count / totalVotes)
+        }
+      })
+
+      // sort by agreement, get top
+
+      // set this.option[x].agreement, this.winningAnswerIndex
+
+      // [update all answers & question]
+
+      // [select winning answers by qId & outcome]
+
+      // [update players]
+
+    })
+
+}
 
 module.exports = mongoose.model('Vote', QuestionSchema);

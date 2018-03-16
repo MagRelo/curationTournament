@@ -63,8 +63,7 @@ exports.startIo = function startIo(server){
   game.on('connection', (socket) => {
 
     // events
-    socket.on('update', data => {GameController.handleUpdate(game, socket, data)})
-    socket.on('proposal', data => {GameController.handlePropsal(game, socket, data)})
+    socket.on('requestData', data => {GameController.requestData(game, socket, data)})
     socket.on('vote', data => {GameController.handleVote(game, socket, data)})
 
   })

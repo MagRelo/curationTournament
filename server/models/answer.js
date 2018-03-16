@@ -1,42 +1,44 @@
 'use strict';
 
 var utils = require('../config/utils')
+const sigUtil = require('eth-sig-util')
+
 
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-var VoteSchema = new Schema({
+var AnswerSchema = new Schema({
     gameId: {type: Schema.Types.ObjectId, ref: 'Game'},
-    predictionId: {type: Schema.Types.ObjectId, ref: 'Prediction'},
+    questionId: {type: Schema.Types.ObjectId, ref: 'Question'},
     userAddress: String,
     signature: String,
-    vote: Boolean,
+    answerIndex: Number,
+    descriptionString: String,
     outcome: Boolean
   },
   {timestamps: true}
 );
 
 
-VoteSchema.statics.addVote = function(userAddress, data){
+AnswerSchema.statics.addAnswer = function(userAddress, data){
 
   // insert prediction and add to game
   return this.findOneAndUpdate(
     {
+      gameId: data.gameId,
+      questionId: data.questionId,
       userAddress: userAddress,
-      predictionId: data.proposalId
     },
     {
       gameId: data.gameId,
-      predictionId: data.proposalId,
+      questionId: data.questionId,
       userAddress: userAddress,
       signature: data.signature,
-      vote: data.vote,
-      outcome: null
+      answerIndex: data.answerIndex,
+      descriptionString: data.descriptionString
     },
     {upsert: true, new: true}
   )
 }
 
-
-
-module.exports = mongoose.model('Vote', VoteSchema);
+module.exports = mongoose.model('Prediction', AnswerSchema);
