@@ -8,40 +8,12 @@ let gameSocket
 // timer
 let intervalId = 0
 
-//
-// import AddProposal from './components/addProposal'
-import VoteOnProposal from './components/question'
-import RoundResults from './components/results'
+import QuestionPanel from './components/questionPanel'
+import ResultsPanel from './components/resultsPanel'
+
 import RoundProgress from './components/roundProgress'
 import PlayerList from './components/playerList'
 
-function ImageButton(props){
-  const {name, imgUrl, row, column, submitVote, selected} = props
-  let styleObject = {
-      gridRow: row,
-      gridColumn: column,
-      backgroundImage: 'url(' + imgUrl + ')',
-      backgroundPosition: 'center',
-      backgroundSize: 'cover'
-    }
-
-  if(selected){
-    styleObject.border = 'solid orange 10px'
-  }
-
-  return <div
-      style={styleObject}
-      onClick={()=> submitVote(name)}>
-
-      <div style={{
-          background: 'linear-gradient( to bottom, black, rgba(255, 0, 0, 0) )',
-          padding: '0.5em',
-          fontSize: '2em'}}>
-
-          {name}
-      </div>
-    </div>
-}
 
 class FormComponent extends Component {
   constructor(props) {
@@ -66,17 +38,17 @@ class FormComponent extends Component {
     this.state = {
       loading: false,
       status: {
-        gameState: '',
+        gameState: 'results',
         timeRemaining: 10
       },
       config: {
         lengthOfPhase: 15
       },
-      question: 'What\'s the best cat?',
+      question: 'What is best cat?',
       options: [
         {_id: 1, name: 'jimmy', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/144334862-giving-cat-bath-632x475.jpg'},
         {_id: 2, name: 'pete', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/155310872-is-cat-stray-632x475.jpg'},
-        {_id: 3, name: 'richard', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2013/09/cat-black-superstitious-fcs-cat-myths-162286659.jpg'},
+        {_id: 3, name: 'richard', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2013/09/cat-black-superstitious-fcs-cat-myths-162286659.jpg', selected: true},
         {_id: 4, name: 'baxter', imgUrl: 'https://www.royalcanin.com/~/media/Royal-Canin/Product-Categories/cat-adult-landing-hero.ashx'},
       ],
       userData: {},
@@ -128,8 +100,7 @@ class FormComponent extends Component {
     console.log(gameData)
 
     // check gameState
-    if(gameData.status.gameState === 'ready' ||
-        gameData.status.gameState === 'closed'){
+    if(gameData.status.gameState === 'ready'){
 
       this.setState({
         config: gameData.config,
@@ -139,8 +110,7 @@ class FormComponent extends Component {
 
     }
 
-    if(gameData.status.gameState === 'proposals' ||
-        gameData.status.gameState === 'voting' ||
+    if(gameData.status.gameState === 'question' ||
         gameData.status.gameState === 'results'){
 
       this.setState({
@@ -185,7 +155,6 @@ class FormComponent extends Component {
     }
   }
 
-
   submitVote(name){
 
     console.log('Submitting vote:', name)
@@ -225,11 +194,9 @@ class FormComponent extends Component {
         })
 
         console.log('Submitted:', name)
-
       })
 
   }
-
 
   // display functions
   startCountdown(){
@@ -266,38 +233,20 @@ class FormComponent extends Component {
             status={this.state.status}/>
         </div>
 
-        <ImageButton
-          name={this.state.options[0].name}
-          imgUrl={this.state.options[0].imgUrl}
-          selected={true}
-          row="2"
-          column="2"
+
+      {this.state.status.gameState === 'question' ?
+
+        <QuestionPanel
+          options={this.state.options}
           submitVote={this.submitVote.bind(this)}/>
 
-        <ImageButton
-          name={this.state.options[1].name}
-          imgUrl={this.state.options[1].imgUrl}
-          selected={false}
-          row="2"
-          column="3"
-          submitVote={this.submitVote.bind(this)}/>
+      :null}
 
-        <ImageButton
-          name={this.state.options[2].name}
-          imgUrl={this.state.options[2].imgUrl}
-          selected={false}
-          row="3"
-          column="2"
-          submitVote={this.submitVote.bind(this)}/>
+      {this.state.status.gameState === 'results' ?
 
-        <ImageButton
-          name={this.state.options[3].name}
-          imgUrl={this.state.options[3].imgUrl}
-          selected={false}
-          row="3"
-          column="3"
-          submitVote={this.submitVote.bind(this)}/>
+        <ResultsPanel options={this.state.options}/>
 
+      :null}
 
       </div>
     )

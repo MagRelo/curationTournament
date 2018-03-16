@@ -14,9 +14,9 @@ const playerList = (props) => {
   const {playerList, currentAccount} = props
 
   return(
-    <div className="game-panel bg-white">
+    <div>
 
-      <h3>Players ({playerList.length})</h3>
+      <h2>Players ({playerList.length})</h2>
       <div>
         <table className="pure-table pure-table-horizontal table-100">
           <thead>

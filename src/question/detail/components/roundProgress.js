@@ -6,17 +6,15 @@ const roundProgress = (props) => {
 
   // progress bar options
   const options = { strokeWidth: 0.5, color: '#ffffff' }
-  const containerStyle = { width: '100%', height: '10px' }
+  const containerStyle = { width: '100%', height: '6px' }
 
   function displayText(status){
-
     let text = question
-
     return text
   }
 
   return(
-    <div className="game-panel">
+    <div>
 
       <h2>{displayText(status)}</h2>
 
@@ -34,7 +32,9 @@ const roundProgress = (props) => {
           <div style={{textAlign: 'right'}}>
 
             {status.timeRemaining > 0 ?
-              <label>Time remaining: {status.timeRemaining}</label>
+              <label style={{textTransform: 'uppercase', fontSize: 'smaller'}}>
+                Time remaining: {status.timeRemaining}
+              </label>
             :
               <div>
                 <label style={{float: 'right',  marginRight: '1.67em'}}>Loading...</label>
