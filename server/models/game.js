@@ -4,6 +4,9 @@ var mongoose = require('mongoose'),
 const bluebird = require('bluebird')
 const moment = require('moment')
 
+const QuestionSchema = require('../models/question')
+const UserSchema = require('../models/user')
+
 var BaseSchema =  new Schema({
     contractAddress: {type: String}, // from ENV
     contractNetwork: {type: String}, // from ENV
@@ -30,7 +33,7 @@ var BaseSchema =  new Schema({
 BaseSchema.methods.nextQuestion = function(){
 
   // get oldest unused question
-  return Question.findOne({'hasBeenUsed': false}).sort({"createdAt": 1}).limit(1)
+  return QuestionSchema.findOne({'hasBeenUsed': false}).sort({"createdAt": 1}).limit(1)
     .then(question => {
       if(!question) throw {'error': 'no question'}
 
@@ -45,39 +48,46 @@ BaseSchema.methods.nextQuestion = function(){
 
 }
 
-BaseSchema.methods.nextPhase = function(phase){
+BaseSchema.statics.nextPhase = function(phase){
 
-  if(this.phase === 'question'){
-
-    return Question.calculateAnswers(this.currentQuestion)
-      .then(results => {
-
-        const start = new Date()
-        this.phase = 'results'
-        this.phaseStartTime = start
-
-        return this.save()
+    return this.findOne({'active': true})
+      .populate({
+        path: 'currentQuestion',
+        model: 'Question',
+        select: '_id question options'
       })
+      .then(gameDoc => {
 
-  } else {
+        if(this.phase === 'question'){
 
-    return this.nextQuestion()
-  }
+          // calculate results for current question & advance phase
+          return gameDoc.currentQuestion.calculateAnswers()
+            .then(results => {
 
+              const start = new Date()
+              this.phase = 'results'
+              this.phaseStartTime = start
+
+              return this.save()
+            })
+
+        } else {
+
+          // advance to next question
+          return gameDoc.nextQuestion()
+        }
+
+      })
 
 }
 
 BaseSchema.statics.publicData = function(){
 
   return this.findOne({'active': true})
-    .populate({
-      path: 'currentQuestion',
-      model: 'Question',
-      select: '_id question options'
-    })
+    .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
+    .populate({ path: 'contributors', model: 'User', select: 'userAddress chips' })
     .then(gameData =>{
       if(!gameData) throw {'error': 'no question'}
-
       return {
         gameData: gameData,
         userData: null
@@ -90,14 +100,12 @@ BaseSchema.statics.userData = function(userAddress){
 
   return bluebird.all([
       this.findOne({'active': true})
-        .populate({
-          path: 'currentQuestion',
-          model: 'Question',
-          select: '_id question options'
-        }),
-      User.findOne({'userAddress': userAddress})
+        .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
+        .populate({ path: 'contributors', model: 'User', select: 'userAddress chips' }),
+      UserSchema.findOne({'userAddress': userAddress})
     ])
     .then(array =>{
+      if(!array[0] || !array[1]) throw {'error': 'no game or user'}
       return {
         gameData: array[0],
         userData: array[1]
@@ -342,93 +350,3 @@ BaseSchema.statics.updateAndFetch = function(gameId, userAddress) {
 };
 
 module.exports = mongoose.model('Game', BaseSchema);
-
-// Helpers
-// --------------
-function publicData(gameDoc, userAddress){
-
-    // only include data for this user & round
-    const userAddressCompare = userAddress ? userAddress.toLowerCase() : ''
-    const userProposals = gameDoc.predictions
-      .filter(prediction => {
-        return (prediction.userAddress === userAddressCompare &&
-          prediction.round === gameDoc.status.currentRound)
-      })
-
-    // publicify data
-    return {
-      config: gameDoc.config,
-      status: gameDoc.status,
-      itemList: gameDoc.itemList,
-      candidateList: gameDoc.candidateList,
-      playerList: gameDoc.playerList,
-      rounds: gameDoc.rounds,
-      predictions: gameDoc.predictions.map(prediction => {
-        return {
-          _id: prediction._id,
-          round: prediction.round,
-          action: prediction.action,
-          target: prediction.target,
-          outcome: prediction.outcome,
-          agreement: prediction.agreement,
-          descriptionString: prediction.descriptionString,
-          userVoted: prediction.votes.some(vote => {
-            return vote.userAddress === userAddressCompare
-          }),
-          userVote: userVote(userAddressCompare, prediction.votes),
-          userPayout: userPayout(userAddressCompare, prediction.votes)
-        }
-      }),
-      userData: {
-        proposal: userProposals[0],
-        userVotes: userVotes(userAddressCompare, gameDoc.predictions)
-      }
-    }
-
-}
-function userVotes(userAddress, predictions){
-  let userVotes = []
-  predictions.forEach(prediction => {
-    prediction.votes.forEach(vote => {
-      if(userAddress === vote.userAddress){
-        userVotes.push(vote)
-      }
-    })
-  })
-  return userVotes
-}
-function userVote(userAddress, votesArray){
-  let userVote = null
-  votesArray.forEach(vote => {
-    if(vote.userAddress === userAddress){
-      userVote = vote.vote
-    }
-  })
-  return userVote
-}
-function userPayout(userAddress, votesArray){
-  let userPayout = null
-  votesArray.forEach(vote => {
-    if(vote.userAddress === userAddress){
-      userPayout = vote.outcome ? 10 : 0
-    }
-  })
-  return userPayout
-}
-function transitionStatus(currentStatus, lengthOfPhase, maxRounds){
-
-  const newStartTime = new Date()
-  let newPhase = ''
-  let newRound = currentStatus.currentRound
-  let gameState = currentStatus.gameState
-
-  return {
-    currentRound: newRound,
-    gameState: newPhase,
-    phaseStartTime: newStartTime.toISOString(),
-    timeRemaining: lengthOfPhase,
-    gameReady: false,
-    gameState: gameState
-  }
-
-}

@@ -30,27 +30,16 @@ class FormComponent extends Component {
     gameSocket.on('reconnecting', this.socketError)
     gameSocket.on('connect', data =>{
 
-      // gameSocket.emit('update', {gameId: this.props.params.tournamentId})
+      // gameSocket.emit('requestData', {gameId: this.props.params.tournamentId})
       console.log('Game connected')
     })
+
     gameSocket.on('update', this.updateGameData.bind(this))
 
     this.state = {
       loading: false,
-      status: {
-        gameState: 'results',
-        timeRemaining: 10
-      },
-      config: {
-        lengthOfPhase: 15
-      },
-      question: 'What is best cat?',
-      options: [
-        {_id: 1, name: 'jimmy', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/144334862-giving-cat-bath-632x475.jpg'},
-        {_id: 2, name: 'pete', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/155310872-is-cat-stray-632x475.jpg'},
-        {_id: 3, name: 'richard', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2013/09/cat-black-superstitious-fcs-cat-myths-162286659.jpg', selected: true},
-        {_id: 4, name: 'baxter', imgUrl: 'https://www.royalcanin.com/~/media/Royal-Canin/Product-Categories/cat-adult-landing-hero.ashx'},
-      ],
+      question: '',
+      options: [],
       userData: {},
       playerList: []
     }
@@ -66,7 +55,7 @@ class FormComponent extends Component {
       console.log('web3 ready');
 
 
-      gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
+      gameSocket.emit('requestData')
       this.setState({ready: true})
 
     } else {
@@ -78,7 +67,7 @@ class FormComponent extends Component {
 
         console.log('web3 found');
 
-        gameSocket.emit('update', {gameId: this.props.params.tournamentId, userAddress: this.props.userAddress})
+        gameSocket.emit('requestData')
         this.setState({ready: true})
 
         // clear timer
@@ -96,53 +85,29 @@ class FormComponent extends Component {
 
   // socket handlers
   updateGameData(data){
-    const gameData = data
+    const gameData = data.gameData
     console.log(gameData)
 
-    // check gameState
-    if(gameData.status.gameState === 'ready'){
+    this.setState({
+      gameId: gameData._id,
+      questionId: gameData.currentQuestion._id,
+      lengthOfPhase: gameData.lengthOfPhase,
+      state: gameData.state,
+      phase: gameData.phase,
+      timeRemaining: gameData.timeRemaining,
+      playerList: gameData.contributors,
+      userData: gameData.userData,
+      question: gameData.currentQuestion.question,
+      options: gameData.currentQuestion.options
+    })
 
-      this.setState({
-        config: gameData.config,
-        playerList: gameData.playerList,
-        items: gameData.itemList
-      })
-
-    }
-
-    if(gameData.status.gameState === 'question' ||
-        gameData.status.gameState === 'results'){
-
-      this.setState({
-        config: gameData.config,
-        status: gameData.status,
-        timeRemaining: gameData.status.timeRemaining,
-        rounds: gameData.rounds,
-        items: gameData.itemList,
-        playerList: gameData.playerList,
-        candidateList: this.filterCandidates(gameData.candidateList, gameData.itemList),
-        predictions: gameData.predictions.filter(prediction => {
-          return prediction.round === gameData.status.currentRound
-        }),
-        userData: gameData.userData
-      })
-
-      // show counter display
-      if(gameData.status.timeRemaining > 0){
-        // this.startCountdown()
-      }
-
-    }
-
-    if(gameData.status.gameState === 'closed'){
-      this.setState({
-        status: gameData.status,
-        rounds: gameData.rounds,
-        playerList: gameData.playerList
-      })
-
+    // show counter display
+    if(gameData.timeRemaining > 0){
+      // this.startCountdown()
+    } else {
       this.endCountdown()
     }
+
 
   }
   socketError(data){
@@ -155,7 +120,7 @@ class FormComponent extends Component {
     }
   }
 
-  submitVote(name){
+  submitVote(name, answerIndex){
 
     console.log('Submitting vote:', name)
 
@@ -164,6 +129,9 @@ class FormComponent extends Component {
 
     // setup signature data
     const questionString = this.state.question
+    const gameId = this.state.gameId
+    const questionId = this.state.questionId
+
     const msgParams = [
       {
         name: 'Question',
@@ -187,9 +155,13 @@ class FormComponent extends Component {
 
         // send to server
         gameSocket.emit('vote', {
-          userAddress: userAddress,
-          descriptionString: questionString,
+          questionString: questionString,
           vote: name,
+          answerIndex: answerIndex,
+          answer: name,
+          questionId: questionId,
+          gameId: gameId,
+          userAddress: userAddress,
           signature: result.result
         })
 
@@ -211,7 +183,7 @@ class FormComponent extends Component {
     this.setState({timeRemaining: nextTick})
     if(nextTick <= 0 && nextTick % 2 === 0){
       this.setState({timeRemaining: 0})
-      gameSocket.emit('update', {gameId: this.props.params.tournamentId})
+      gameSocket.emit('requestData', {gameId: this.props.params.tournamentId})
     }
   }
 
@@ -227,14 +199,16 @@ class FormComponent extends Component {
         </div>
 
         <div style={{gridRow: '1', gridColumn:'2 / 4'}}>
+
           <RoundProgress
             question={this.state.question}
-            config={this.state.config}
-            status={this.state.status}/>
+            lengthOfPhase={this.state.lengthOfPhase}
+            timeRemaining={this.state.timeRemaining}/>
+
         </div>
 
 
-      {this.state.status.gameState === 'question' ?
+      {this.state.phase === 'question' ?
 
         <QuestionPanel
           options={this.state.options}
@@ -242,7 +216,7 @@ class FormComponent extends Component {
 
       :null}
 
-      {this.state.status.gameState === 'results' ?
+      {this.state.phase === 'results' ?
 
         <ResultsPanel options={this.state.options}/>
 

@@ -4,11 +4,14 @@ const sigUtil = require('eth-sig-util')
 
 const config = require('../config/environment')
 
-const VoteModel = require('../models/vote')
-const PredictionModel = require('../models/prediction')
-
 const GameSchema = require('../models/game')
 const Game = require('mongoose').model('Game')
+
+const QuestionSchema = require('../models/question')
+const Question = require('mongoose').model('Question')
+
+const AnswerSchema = require('../models/answer')
+
 
 exports.createGame = (req, res) => {
   const newGame = new GameSchema({})
@@ -16,31 +19,48 @@ exports.createGame = (req, res) => {
   // validate input
   const options = req.body
 
-  newGame.config.name = options.name
-  newGame.config.ownerAddress = options.contractOwner
-  newGame.config.oracleAddress = options.oracleAddress
-  newGame.config.minDeposit = options.minDeposit
-
-  newGame.playerList = buildPlayerList(options.playerList)
-
-  // TODO testing
-  // newGame.candidateList = candidateList
+  newGame.contributors = [
+    '5aad40d6ec802afd31b96bf2',
+    '5aad40ecec802afd31b96bf3'
+  ]
 
   newGame.save()
+    .then(gameDoc => { res.json(gameDoc) })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({error: error})
+    })
+
+}
+
+exports.nextPhase = (req, res) => {
+
+  Game.nextPhase()
+    .then(gameDoc => { res.json(gameDoc) })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({error: error.message})
+    })
+
+}
+
+exports.createQuestion = (req, res) => {
+
+  const question = new QuestionSchema({
+    question: 'What is best cat?',
+    options: [
+      {name: 'jimmy', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/144334862-giving-cat-bath-632x475.jpg'},
+      {name: 'pete', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2012/11/155310872-is-cat-stray-632x475.jpg'},
+      {name: 'richard', imgUrl: 'https://d17fnq9dkz9hgj.cloudfront.net/uploads/2013/09/cat-black-superstitious-fcs-cat-myths-162286659.jpg'},
+      {name: 'baxter', imgUrl: 'https://www.royalcanin.com/~/media/Royal-Canin/Product-Categories/cat-adult-landing-hero.ashx'},
+    ]
+  })
+
+  question.save()
     .then(gameDoc => { res.json(gameDoc) })
     .catch(error => { res.status(500).json({error: error}) })
 
 }
-//
-// exports.listGames = (req, res) => {
-//   GameSchema.find({})
-//     .then(gameDoc => { res.json(gameDoc) })
-//     .catch(error => {
-//       console.log(error.message);
-//       res.status(500).json({error: error})
-//     })
-//
-// }
 
 exports.requestData = (game, socket, data) => {
 
@@ -66,19 +86,21 @@ exports.requestData = (game, socket, data) => {
 
 exports.handleVote = (game, socket, data) => {
 
-  let predictionDoc, userAddress
+  const gameId = data.gameId
+  const questionId = data.questionId
+  let userAddress = null
 
   // setup signature data
   const msgParams = [
     {
-      name: 'Your vote',
+      name: 'Question',
       type: 'string',
-      value: data.descriptionString
+      value: data.questionString
     },
     {
-      name: 'Question ID',
+      name: 'Your vote',
       type: 'string',
-      value: data.questionId
+      value: data.answer
     }
   ]
 
@@ -88,34 +110,41 @@ exports.handleVote = (game, socket, data) => {
     sig: data.signature
   })
 
+  // validate
+  if(!gameId || !questionId || !userAddress){
+    return Promise.resolve(game.emit('error', gameId, questionId, userAddress))
+  }
+
   GameSchema.findById(data.gameId)
-    .populate({
-      path: 'currentQuestion',
-      model: 'Question',
-      select: '_id question options answers'
-    })
+    .populate({ path: 'contributors', model: 'User', select: 'userAddress' })
     .then(gameDoc => {
       if(!gameDoc){throw {error: 'no game'}}
 
       // validate account against whitelist
-      if(!userAddress || !playerOnList(userAddress, gameDoc.playerList)){
+      if(!userAddress || !playerOnList(userAddress, gameDoc.contributors)){
         throw {error: 'bad user'}
       }
 
-      // test
-      gameDoc.currentQuestion.answers.push({
+      // upsert answer
+      return AnswerSchema.addAnswer(userAddress, {
         gameId: data.gameId,
         questionId: data.questionId,
         userAddress: userAddress,
         signature: data.signature,
         answerIndex: data.answerIndex,
-        descriptionString: data.descriptionString
+        questionString: data.questionString
       })
 
-      // save prediction
-      return gameDoc.save()
     })
-    .then(updatedGame => {
+    .then(answerDoc => {
+      console.log('answer added:', !!answerDoc._id, answerDoc._id);
+
+      // add answerId to question doc
+      return Question.update({_id: questionId}, {'$addToSet': {answers: answerDoc._id}})
+    })
+    .then(questionDoc => {
+
+      // get fresh data
       return Game.userData(userAddress)
     })
     .then(updatedGame => {
@@ -126,5 +155,11 @@ exports.handleVote = (game, socket, data) => {
       return Promise.resolve(game.emit('error', error))
     })
 
+}
 
+
+function playerOnList(userAddress, playerList){
+  return playerList.some(player => {
+    return player.userAddress.toLowerCase() === userAddress.toLowerCase()
+  })
 }

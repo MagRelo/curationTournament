@@ -1,22 +1,21 @@
 import React from 'react'
 
 function ImageButton(props){
-  const {name, imgUrl, row, column, submitVote, selected} = props
-  let styleObject = {
-      gridRow: row,
-      gridColumn: column,
-      backgroundImage: 'url(' + imgUrl + ')',
-      backgroundPosition: 'center',
-      backgroundSize: 'cover'
-    }
+  const {name, imgUrl, index, submitVote, selected} = props
 
-  if(selected){
-    styleObject.border = 'solid orange 10px'
-  }
+  const row = index < 2 ? "1" : "2"
+  const column = index%2 === 0 ? "1" : "2"
 
   return <div
-      style={styleObject}
-      onClick={()=> submitVote(name)}>
+      style={{
+        gridRow: row,
+        gridColumn: column,
+        backgroundImage: 'url(' + imgUrl + ')',
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        border: (selected ? 'solid orange 10px' : '')
+      }}
+      onClick={()=> submitVote(name, index)}>
 
       <div style={{
           background: 'linear-gradient( to bottom, black, rgba(255, 0, 0, 0) )',
@@ -38,37 +37,16 @@ class questionPanel extends React.Component {
       return (
         <div style={{gridRow: '2 / 4', gridColumn:'2 / 4', display: 'grid', gridGap: '1em'}}>
 
-          <ImageButton
-            name={this.props.options[0].name}
-            imgUrl={this.props.options[0].imgUrl}
-            selected={this.props.options[0].selected}
-            row="1"
-            column="1"
-            submitVote={this.props.submitVote.bind(this)}/>
+          {this.props.options.map((option, index) => {
 
-          <ImageButton
-            name={this.props.options[1].name}
-            imgUrl={this.props.options[1].imgUrl}
-            selected={this.props.options[1].selected}
-            row="1"
-            column="2"
-            submitVote={this.props.submitVote.bind(this)}/>
-
-          <ImageButton
-            name={this.props.options[2].name}
-            imgUrl={this.props.options[2].imgUrl}
-            selected={this.props.options[2].selected}
-            row="2"
-            column="1"
-            submitVote={this.props.submitVote.bind(this)}/>
-
-          <ImageButton
-            name={this.props.options[3].name}
-            imgUrl={this.props.options[3].imgUrl}
-            selected={this.props.options[3].selected}
-            row="2"
-            column="2"
-            submitVote={this.props.submitVote.bind(this)}/>
+            return <ImageButton
+              key={this.props.options[index]._id}
+              name={this.props.options[index].name}
+              imgUrl={this.props.options[index].imgUrl}
+              selected={this.props.options[index].selected}
+              index={index}
+              submitVote={this.props.submitVote.bind(this)}/>
+          })}
 
         </div>
       )

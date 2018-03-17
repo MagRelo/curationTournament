@@ -3,6 +3,8 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
+const AnswerSchema = require('../models/answer')
+
 var QuestionSchema = new Schema({
     question: String,
     options: [{
@@ -12,7 +14,7 @@ var QuestionSchema = new Schema({
     }],
     answers: [{type: Schema.Types.ObjectId, ref: 'Answer'}],
     winningAnswerIndex: {type: Number, default: null},
-    hasBeenUsed: Boolean
+    hasBeenUsed: {type: Boolean, default: false}
   },
   {timestamps: true}
 );
@@ -55,4 +57,4 @@ QuestionSchema.methods.calculateAnswers = function(){
 
 }
 
-module.exports = mongoose.model('Vote', QuestionSchema);
+module.exports = mongoose.model('Question', QuestionSchema);

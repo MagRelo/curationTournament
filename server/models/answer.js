@@ -1,9 +1,5 @@
 'use strict';
 
-var utils = require('../config/utils')
-const sigUtil = require('eth-sig-util')
-
-
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
@@ -13,7 +9,7 @@ var AnswerSchema = new Schema({
     userAddress: String,
     signature: String,
     answerIndex: Number,
-    descriptionString: String,
+    questionString: String,
     outcome: Boolean
   },
   {timestamps: true}
@@ -22,7 +18,6 @@ var AnswerSchema = new Schema({
 
 AnswerSchema.statics.addAnswer = function(userAddress, data){
 
-  // insert prediction and add to game
   return this.findOneAndUpdate(
     {
       gameId: data.gameId,
@@ -35,10 +30,10 @@ AnswerSchema.statics.addAnswer = function(userAddress, data){
       userAddress: userAddress,
       signature: data.signature,
       answerIndex: data.answerIndex,
-      descriptionString: data.descriptionString
+      questionString: data.questionString
     },
     {upsert: true, new: true}
   )
 }
 
-module.exports = mongoose.model('Prediction', AnswerSchema);
+module.exports = mongoose.model('Answer', AnswerSchema);

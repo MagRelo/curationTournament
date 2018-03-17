@@ -12,8 +12,14 @@ module.exports = function(app) {
   });
 
   // Game
-  app.get('/api/list', gameController.listGames)
+  // app.get('/api/list', gameController.listGames)
+
+  app.post('/api/game/next', gameController.nextPhase)
   app.post('/api/game', gameController.createGame)
+
+
+
+  app.post('/api/question', gameController.createQuestion)
 
   // Analytics (not in use)
   app.post('/api/analytics/send', analyticsController.sendEvent);
