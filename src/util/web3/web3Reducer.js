@@ -1,6 +1,6 @@
 const initialState = {
   web3Instance: null,
-  account: {}
+  account: ''
 }
 
 const web3Reducer = (state = initialState, action) => {

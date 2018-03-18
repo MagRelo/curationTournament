@@ -41,14 +41,14 @@ body,
 
 
 
-h1{
+h1 {
   color: #eceeef;
 }
 
 h2, h3 {
-  font-family: 'Michroma', 'Arial Narrow', sans-serif;
-  color: #103A52;
-  border-bottom: solid 1px;
+  /* font-family: 'Michroma', 'Arial Narrow', sans-serif; */
+  /* color: #103A52; */
+  border-bottom: solid 1px #103A52;
   margin: 0;
   line-height: 2em;
 }

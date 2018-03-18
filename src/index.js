@@ -20,7 +20,6 @@ import Home from './home/homeContainer'
 import Account from './account/accountContainer'
 
 import QuestionDetail from './question/detail/detailContainer'
-import QuestionList from './question/list/listContainer'
 
 
 // import TourneyCreate from './tourney/create/createTournamentContainer'
