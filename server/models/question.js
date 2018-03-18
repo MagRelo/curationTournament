@@ -37,41 +37,37 @@ QuestionSchema.methods.calculateAnswers = function(){
   return bluebird.all(promiseArray)
     .then(countArray => {
 
-      // [12, 45, 100, 444]
       const totalVotes = countArray.reduce((total, item) => {return total + item}, 0)
-      const agreementArray = countArray.map((count, index) => {
-        return {
-          votes: count,
-          agreement: (count / totalVotes),
-          outcome: null
-        }
-      })
-
-      // get high score (to capture ties)
       let highScore = 0
-      agreementArray.forEach(option => {
-        if(option.agreement > highScore){
-          highScore = option.agreement
+
+      // calc scores and get highest score
+      countArray.forEach((count, i) => {
+
+        // get consensus
+        const agreement = (count / totalVotes)
+
+        // set consensus
+        this.options[i].agreement = agreement
+
+        // get high score to mark winners later (and include ties)
+        if(agreement > highScore){
+          highScore = agreement
         }
+
       })
 
-      // mark winner(s)
-      let promiseArray = []
-      agreementArray.forEach(option => {
-        if(highScore === option.agreement){
-          option.outcome = true
-        }
-      })
-
-      // set this.option[x].agreement
+      // set winner(s)
       this.options.forEach((option, i) => {
-        this.options[i].agreement = agreementArray[i].agreement
-        this.options[i].outcome = agreementArray[i].outcome
 
-        // mark winning indeces for bulk update later
-        if(agreementArray[i].outcome){
+        if(highScore === option.agreement){
+
+          // mark as winner
+          this.options[i].outcome = true
+
+          // save winning index(es) for bulk update later
           winningIndices.push(i)
         }
+
       })
 
       // save question
@@ -90,7 +86,10 @@ QuestionSchema.methods.calculateAnswers = function(){
     .then(answers => {
 
       // get winning answers
-      return AnswerSchema.find({'questionId': this._id, 'answerIndex': {'$in': winningIndices} })
+      return AnswerSchema.find(
+        {'questionId': this._id, 'answerIndex': {'$in': winningIndices} }
+      )
+
     })
     .then(answers => {
 
