@@ -16,11 +16,16 @@ getWeb3
 import App from './App'
 import Page404 from  './errors/404'
 
+import Home from './home/homeContainer'
+import Account from './account/accountContainer'
+
 import QuestionDetail from './question/detail/detailContainer'
 import QuestionList from './question/list/listContainer'
 
+
 // import TourneyCreate from './tourney/create/createTournamentContainer'
 //
+// <Route path="question/:tournamentId" component={QuestionDetail} />
 
 // Redux Store
 import store from './store'
@@ -30,11 +35,10 @@ ReactDOM.render((
     <Provider store={store}>
       <Router history={history}>
         <Route path="/" component={App}>
-          <IndexRoute component={QuestionList} />
-
+          <IndexRoute component={Home} />
 
           <Route path="live" component={QuestionDetail} />
-          <Route path="question/:tournamentId" component={QuestionDetail} />
+          <Route path="account" component={Account} />
 
           <Route path='*' exact={true} component={Page404} />
         </Route>

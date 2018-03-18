@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import tourneyListComponent from './listComponent'
+import accountComponent from './accountComponent'
 
 const mapStateToProps = (state, ownProps) => {
   return {
@@ -13,9 +13,9 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-const listContainer = connect(
+const accountContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(tourneyListComponent)
+)(accountComponent)
 
-export default listContainer
+export default accountContainer
