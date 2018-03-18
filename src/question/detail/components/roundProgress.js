@@ -26,7 +26,7 @@ const roundProgress = (props) => {
 
           <div style={{textAlign: 'right'}}>
 
-            {status.timeRemaining > 0 ?
+            {timeRemaining > 0 ?
               <label style={{textTransform: 'uppercase', fontSize: 'smaller'}}>
                 Time remaining: {timeRemaining}
               </label>

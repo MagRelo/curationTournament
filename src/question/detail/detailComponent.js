@@ -30,7 +30,7 @@ class FormComponent extends Component {
     gameSocket.on('reconnecting', this.socketError)
     gameSocket.on('connect', data =>{
 
-      // gameSocket.emit('requestData', {gameId: this.props.params.tournamentId})
+      gameSocket.emit('requestData')
       console.log('Game connected')
     })
 
@@ -55,7 +55,7 @@ class FormComponent extends Component {
       console.log('web3 ready');
 
 
-      gameSocket.emit('requestData')
+      // gameSocket.emit('requestData')
       this.setState({ready: true})
 
     } else {
@@ -67,7 +67,7 @@ class FormComponent extends Component {
 
         console.log('web3 found');
 
-        gameSocket.emit('requestData')
+        // gameSocket.emit('requestData')
         this.setState({ready: true})
 
         // clear timer
@@ -92,8 +92,8 @@ class FormComponent extends Component {
       gameId: gameData._id,
       questionId: gameData.currentQuestion._id,
       lengthOfPhase: gameData.lengthOfPhase,
-      state: gameData.state,
       phase: gameData.phase,
+      phaseStartTime: gameData.phaseStartTime,
       timeRemaining: gameData.timeRemaining,
       playerList: gameData.contributors,
       userData: gameData.userData,
