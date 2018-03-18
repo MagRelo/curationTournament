@@ -6,6 +6,7 @@ var mongoose = require('mongoose'),
 var AnswerSchema = new Schema({
     gameId: {type: Schema.Types.ObjectId, ref: 'Game'},
     questionId: {type: Schema.Types.ObjectId, ref: 'Question'},
+    user: {type: Schema.Types.ObjectId, ref: 'User'},
     userAddress: String,
     signature: String,
     answerIndex: Number,

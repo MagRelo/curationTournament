@@ -32,7 +32,7 @@ const roundProgress = (props) => {
               </label>
             :
               <div>
-                <label style={{float: 'right',  marginRight: '1.67em'}}>Loading...</label>
+                <label style={{float: 'right',  marginRight: '1.67em', textTransform: 'uppercase', fontSize: 'smaller'}}>Loading</label>
                 <div className="small-spinner"></div>
               </div>
             }

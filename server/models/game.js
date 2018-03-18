@@ -8,10 +8,10 @@ const QuestionSchema = require('../models/question')
 const UserSchema = require('../models/user')
 
 var BaseSchema =  new Schema({
+    active: {type: Boolean, default: true},
+    lengthOfPhase: {type: Number, default: 15},
     contractAddress: {type: String}, // from ENV
     contractNetwork: {type: String}, // from ENV
-    lengthOfPhase: {type: Number, default: 15}, // from ENV
-    active: {type: Boolean, default: true},
 
     // contract data, update on interval
     ownerAddress: {type: String},
@@ -21,10 +21,9 @@ var BaseSchema =  new Schema({
     contributors: [{type: Schema.Types.ObjectId, ref: 'User'}],
 
     // game data - push
-    state: {type: String, default: 'ready'},
     currentQuestion: {type: Schema.Types.ObjectId, ref: 'Question'},
     questionStartTime: {type: Date},
-    phase: {type: String},
+    phase: {type: String, default: 'ready'},
     phaseStartTime: {type: Date},
   },
   {timestamps: true}
@@ -58,17 +57,17 @@ BaseSchema.statics.nextPhase = function(phase){
       })
       .then(gameDoc => {
 
-        if(this.phase === 'question'){
+        if(gameDoc.phase === 'question'){
 
           // calculate results for current question & advance phase
           return gameDoc.currentQuestion.calculateAnswers()
             .then(results => {
 
               const start = new Date()
-              this.phase = 'results'
-              this.phaseStartTime = start
+              gameDoc.phase = 'results'
+              gameDoc.phaseStartTime = start
 
-              return this.save()
+              return gameDoc.save()
             })
 
         } else {
@@ -85,7 +84,7 @@ BaseSchema.statics.publicData = function(){
 
   return this.findOne({'active': true})
     .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
-    .populate({ path: 'contributors', model: 'User', select: 'userAddress chips' })
+    .populate({ path: 'contributors', model: 'User', select: 'userAddress points' })
     .then(gameData =>{
       if(!gameData) throw {'error': 'no question'}
       return {
@@ -101,7 +100,7 @@ BaseSchema.statics.userData = function(userAddress){
   return bluebird.all([
       this.findOne({'active': true})
         .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
-        .populate({ path: 'contributors', model: 'User', select: 'userAddress chips' }),
+        .populate({ path: 'contributors', model: 'User', select: 'userAddress points' }),
       UserSchema.findOne({'userAddress': userAddress})
     ])
     .then(array =>{

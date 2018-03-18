@@ -17,14 +17,12 @@ function displayPercent(value){
 
 
 function ResultsPanelItem(props){
-  const {name, imgUrl, selected, row, column, submitVote} = props
-
-  const votePercentage = Math.random()
+  const {name, imgUrl, agreement, outcome, selected, row, column, submitVote} = props
 
   return <div style={{
               display: 'grid',
               gridGap: '1em',
-              gridTemplateColumns: '1fr 3fr 1fr',
+              gridTemplateColumns: '2fr 3fr 1fr',
               gridTemplateRows: 'auto'}}>
 
       <div style={{
@@ -44,22 +42,22 @@ function ResultsPanelItem(props){
 
       <div style={{
             display: 'grid',
-            gridGap: '1em',
             gridTemplateColumns: 'auto',
             gridTemplateRows: '1fr 1fr 1fr'}}>
 
-            <div className="progressbar">
+            <div className="progressbar" style={{gridRow: '2'}}>
               <Line
-                progress={votePercentage}
+                progress={agreement}
                 initialAnimate={false}
                 options={options}
                 containerStyle={containerStyle}
                 containerClassName={'.progressbar'}/>
+              <p>{displayPercent(agreement)}</p>
             </div>
-            <span>{displayPercent(votePercentage)}</span>
+
       </div>
 
-      <div>win?</div>
+      <div>{outcome ? 'win!': ''}</div>
 
     </div>
 }
@@ -75,7 +73,6 @@ class resultsPanel extends React.Component {
             gridRow: '2 / 4',
             gridColumn:'2 / 4',
             display: 'grid',
-            gridGap: '1em',
             gridTemplateColumns: '1fr',
             gridTemplateRows: '1fr 1fr 1fr 1fr'
           }}>
@@ -86,7 +83,9 @@ class resultsPanel extends React.Component {
                     key={option.name}
                     name={option.name}
                     imgUrl={option.imgUrl}
-                    selected={option.selected}/>
+                    selected={option.selected}
+                    outcome={option.outcome}
+                    agreement={option.agreement}/>
 
           })}
 
