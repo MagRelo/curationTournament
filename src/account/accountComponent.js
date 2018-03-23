@@ -46,23 +46,15 @@ class TournamentList extends Component {
     return(
       <main>
         <h1>Account</h1>
-
-        <h3>Browser status</h3>
-        <p>To participate you need to use a web browser that supports Web3</p>
-        <p>Requirements:</p>
+        <p>Status: Not Active</p>
         <ul>
           <li>Does your browser support Web3? {!!this.props.web3 ? 'Yes' : 'No'}</li>
           <li>Is your Ethereum account available? {!!this.props.userAddress ? 'Yes' : 'No'}</li>
-        </ul>
-
-        <h3>Account status</h3>
-        <p>Your account: {this.props.userAddress}</p>
-        <ul>
           <li>Is your account on the whitelist? No
             <p><Link to="/pasta">Request Access</Link></p>
           </li>
           <li>Have you deposited in the contract? No
-            <p><Link to="/party">Send Deposit</Link></p>
+            <p><Link to="/party">Send Deposit (locked)</Link></p>
           </li>
         </ul>
 

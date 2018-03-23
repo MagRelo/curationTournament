@@ -17,21 +17,15 @@ class TournamentList extends Component {
   render() {
     return(
       <main>
-        <h1>Can Sense Us</h1>
-        <p>A simple consensus game.</p>
+        <h1>Servesa</h1>
+        <p>Scalable web architecture for web3</p>
 
-        <h2>Game Status:</h2>
-        <p>Status: Active!</p>
-        <p>Current Players: 123</p>
-
-        <h2>Your status:</h2>
-        <p>Web3 avilable? {!!this.props.web3 ? 'Yes' : 'No'}</p>
-        <p>Ethereum account available? {!!this.props.userAddress ? 'Yes' : 'No'}</p>
-
-        <Link
-          className="pure-button pure-button-xlarge pure-button-primary"
-          to="/live"> Join Game
-        </Link>
+        <h2>Features</h2>
+        <ul>
+          <li>Privacy</li>
+          <li>Secure user accounts with no email or passwords</li>
+          <li>Transparent accounting for user's funds</li>
+        </ul>
 
       </main>
     )

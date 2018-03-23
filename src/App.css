@@ -12,15 +12,6 @@ toape? - FAE7C7
 
 */
 
-html{
-
-    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#177b9f+0,175772+100 */
-    background: #177b9f; /* Old browsers */
-    background: -moz-radial-gradient(center, ellipse cover, #177b9f 0%, #175772 100%); /* FF3.6-15 */
-    background: -webkit-radial-gradient(center, ellipse cover, #177b9f 0%,#175772 100%); /* Chrome10-25,Safari5.1-6 */
-    background: radial-gradient(ellipse at center, #177b9f 0%,#175772 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#177b9f', endColorstr='#175772',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
 
 html, body, #root, .App, .container, main{
   height: 100%;
@@ -29,7 +20,7 @@ html, body, #root, .App, .container, main{
 body,
 .pure-g [class*=pure-u] {
   font-family: 'Barlow', sans-serif;
-  color: #eceeef;
+  color: #103A52;
   height: 100%;
 }
 
@@ -39,18 +30,11 @@ body,
   padding: 54px 2em 2em 2em;
 }
 
-
-
-h1 {
-  color: #eceeef;
-}
-
 h2, h3 {
   /* font-family: 'Michroma', 'Arial Narrow', sans-serif; */
-  /* color: #103A52; */
-  border-bottom: solid 1px #103A52;
-  margin: 0;
-  line-height: 2em;
+  /* border-bottom: solid 1px #103A52; */
+  /* margin: 0; */
+  /* line-height: 1.5em; */
 }
 
 .table-100{
@@ -196,7 +180,7 @@ form > p {
   width: 40px;
   height: 40px;
   margin: 40px auto;
-  background-color: #ffffff;
+  background-color: #103A52;
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
@@ -206,7 +190,7 @@ form > p {
   height: 1em;
   margin-left: auto;
   margin-top: 0;
-  background-color: #ffffff;
+  background-color: #103A52;
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
