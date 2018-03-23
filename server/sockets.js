@@ -57,14 +57,30 @@ var gameAuth = function socketAuth(socket, next){
 
 exports.startIo = function startIo(server){
   io = io.listen(server);
+  console.log('ws listening on port 8080')
 
   var game = io.of('/game');
   // game.use(gameAuth);
-  game.on('connection', (socket) => {
+  game.on('connection', socket => {
 
     // events
-    socket.on('requestData', data => {GameController.requestData(game, socket, data)})
-    socket.on('vote', data => {GameController.handleVote(game, socket, data)})
+    socket.on('requestData', data => {
+      GameController.requestData(socket.auth, data)
+        .then(gameDoc => game.emit('update', gameDoc))
+        .catch(error => {
+          console.log(error)
+          game.emit('error', error)
+        })
+    })
+
+    socket.on('vote', data => {
+      GameController.handleVote(socket.auth, data)
+        .then(updatedGame => {game.emit('update', updatedGame)})
+        .catch(error => {
+          console.log(error)
+          game.emit('error', error)
+        })
+    })
 
   })
 

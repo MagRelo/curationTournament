@@ -19,10 +19,15 @@ exports.createGame = (req, res) => {
   // validate input
   const options = req.body
 
-  newGame.contributors = [
-    '5aad40d6ec802afd31b96bf2',
-    '5aad40ecec802afd31b96bf3'
-  ]
+  // setup with game
+  newGame.contractNetwork = ''
+  newGame.contractAddress = ''
+
+  // from contract, eventually
+  newGame.ownerAddress = '0x106f681949e222d57a175cd85685e3bd9975b973'
+  newGame.oracleAddress = '0x106f681949e222d57a175cd85685e3bd9975b973'
+  newGame.minDeposit = 0.1
+  newGame.contributors = ['5aad40d6ec802afd31b96bf2', '5aad40ecec802afd31b96bf3']
 
   newGame.save()
     .then(gameDoc => { res.json(gameDoc) })
@@ -32,18 +37,22 @@ exports.createGame = (req, res) => {
     })
 
 }
-
 exports.nextPhase = (req, res) => {
 
   Game.nextPhase()
-    .then(gameDoc => { res.json(gameDoc) })
+    .then(gameDoc => {
+      return Game.userData('')
+    })
+    .then(gameData => {
+      res.io.of('game').emit('update', gameData)
+      return res.json(gameData)
+    })
     .catch(error => {
       console.log(error)
       res.status(500).json({error: error.message})
     })
 
 }
-
 exports.createQuestion = (req, res) => {
 
   const question = new QuestionSchema({
@@ -62,29 +71,21 @@ exports.createQuestion = (req, res) => {
 
 }
 
-exports.requestData = (game, socket, data) => {
+
+//
+// CLIENT GAME DATA
+//
+exports.requestData = (auth, data) => {
 
   // if socket has auth => userData
-  if(socket.auth){
-    return Game.userData(socket.auth.userAddress)
-      .then(gameDoc => Promise.resolve(game.emit('update', gameDoc)) )
-      .catch(error => {
-        console.log(error)
-        return Promise.resolve(game.emit('error', error))
-      })
+  if(auth){
+    return Game.userData(auth.userAddress)
   }
 
   // no auth => public data
-  return Game.publicData()
-    .then(gameDoc => Promise.resolve(game.emit('update', gameDoc)) )
-    .catch(error => {
-      console.log(error)
-      return Promise.resolve(game.emit('error', error))
-    })
-
+  return Game.userData('')
 }
-
-exports.handleVote = (game, socket, data) => {
+exports.handleVote = (auth, data) => {
 
   const gameId = data.gameId
   const questionId = data.questionId
@@ -110,12 +111,12 @@ exports.handleVote = (game, socket, data) => {
     sig: data.signature
   })
 
-  // validate
   if(!gameId || !questionId || !userAddress){
-    return Promise.resolve(game.emit('error', gameId, questionId, userAddress))
+    console.log('bad vote data');
+    return Promise.reject('bad vote data')
   }
 
-  GameSchema.findById(data.gameId)
+  return GameSchema.findById(data.gameId)
     .populate({ path: 'contributors', model: 'User', select: 'userAddress' })
     .then(gameDoc => {
       if(!gameDoc){throw {error: 'no game'}}
@@ -147,16 +148,23 @@ exports.handleVote = (game, socket, data) => {
       // get fresh data
       return Game.userData(userAddress)
     })
-    .then(updatedGame => {
-      return Promise.resolve(game.emit('update', updatedGame))
-    })
-    .catch(error => {
-      console.log(error)
-      return Promise.resolve(game.emit('error', error))
-    })
 
 }
 
+
+//
+// ON-CHAIN CONTRACT DATA
+//
+exports.updateGameData = (update) => {
+
+  const {action, data} = update
+
+  // add contributors
+    // userAddress, +value
+  // remove contributors
+    // userAddress, -value
+
+}
 
 function playerOnList(userAddress, playerList){
   return playerList.some(player => {
