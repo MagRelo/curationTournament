@@ -24,11 +24,14 @@ var gameAuth = function socketAuth(socket, next){
     }
 
     if(cookieObject){
+
+      // from: https://medium.com/metamask/scaling-web3-with-signtypeddata-91d6efc8b290
       // setup recovery
+
       const msgParams = [{
-        name: 'Message',
+        name: 'Create secure connection',
         type: 'string',
-        value: 'You will be logged into game ' + cookieObject.gameId
+        value: 'Your account: ' + cookieObject.userAddress
       }]
       const recovered = sigUtil.recoverTypedSignature({
         data: msgParams,
@@ -37,19 +40,18 @@ var gameAuth = function socketAuth(socket, next){
 
       // if it matches then we have a valid cookie.
       if (recovered === cookieObject.userAddress) {
-        // console.log('Recovered signer: ' + recovered)
 
-        // check session store for this address, and return the games that they should have access to
-        // TODO - for testing we'll take their word for it
-        socket.userId = cookieObject.userAddress
-        socket.gameId = cookieObject.gameId
+        socket.auth = {
+          userAddress: cookieObject.userAddress
+        }
 
       } else {
-        console.log('Failed to verify signer, got: ' + recovered)
         // box em out
+        console.log('Failed to verify signer, got: ' + recovered)
       }
     }
 
+    next()
   }
 
   return next();

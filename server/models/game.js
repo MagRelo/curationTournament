@@ -6,30 +6,36 @@ const moment = require('moment')
 
 const QuestionSchema = require('../models/question')
 const UserSchema = require('../models/user')
+const ContractSchema = require('../models/contract')
 
-var BaseSchema =  new Schema({
-    active: {type: Boolean, default: true},
-    lengthOfPhase: {type: Number, default: 15},
-    contractAddress: {type: String}, // from ENV
-    contractNetwork: {type: String}, // from ENV
+var GameSchema =  new Schema({
 
-    // contract data, update on interval
-    ownerAddress: {type: String},
-    oracleAddress: {type: String},
-    contractValue: {type: String},
-    minDeposit: {type: Number},
-    contributors: [{type: Schema.Types.ObjectId, ref: 'User'}],
+    contract: {type: Schema.Types.ObjectId, ref: 'Contract'},
 
-    // game data - push
     currentQuestion: {type: Schema.Types.ObjectId, ref: 'Question'},
     questionStartTime: {type: Date},
     phase: {type: String, default: 'ready'},
+    lengthOfPhase: {type: Number, default: 15},
     phaseStartTime: {type: Date},
+
+    active: {type: Boolean, default: true},
   },
   {timestamps: true}
 );
 
-BaseSchema.methods.nextQuestion = function(){
+
+GameSchema.statics.addGame = function(options){
+
+  // add contract
+  ContractSchema.initContract()
+
+  // add game
+
+  // next question(?)
+
+}
+
+GameSchema.methods.nextQuestion = function(){
 
   // get oldest unused question
   return QuestionSchema.findOne({'hasBeenUsed': false}).sort({"createdAt": 1}).limit(1)
@@ -47,7 +53,7 @@ BaseSchema.methods.nextQuestion = function(){
 
 }
 
-BaseSchema.statics.nextPhase = function(phase){
+GameSchema.statics.nextPhase = function(phase){
 
     return this.findOne({'active': true})
       .populate({
@@ -80,41 +86,20 @@ BaseSchema.statics.nextPhase = function(phase){
 
 }
 
-BaseSchema.statics.publicData = function(){
-
-  return this.findOne({'active': true})
-    .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
-    .populate({ path: 'contributors', model: 'User', select: 'userAddress points' })
-    .lean()
-    .then(gameData =>{
-      if(!gameData) throw {'error': 'no game'}
-
-      // calc timeRemaining
-      const phaseStart = moment(gameData.phaseStartTime)
-      const secondsElapsed = moment().diff(phaseStart, 'seconds')
-      gameData.timeRemaining = Math.max(gameData.lengthOfPhase - secondsElapsed, -1)
-
-      return {
-        gameData: gameData,
-        userData: null
-      }
-    })
-
-}
-
-BaseSchema.statics.userData = function(userAddress){
+GameSchema.statics.userData = function(userAddress){
 
   return bluebird.all([
       this.findOne({'active': true})
         .populate({ path: 'currentQuestion', model: 'Question', select: '_id question options' })
-        .populate({ path: 'contributors', model: 'User', select: 'userAddress points' }),
+        .populate({ path: 'contributors', model: 'User', select: 'userAddress points' })
+        .lean(),
       UserSchema.findOne({'userAddress': userAddress})
     ])
     .then(array =>{
 
       const gameData = array[0]
       const userData = array[1]
-      if(!gameData || !userData) throw {'error': 'no game or user'}
+      if(!gameData) throw {'error': 'no game data'}
 
       // calc timeRemaining
       const phaseStart = moment(gameData.phaseStartTime)
@@ -129,4 +114,4 @@ BaseSchema.statics.userData = function(userAddress){
 
 }
 
-module.exports = mongoose.model('Game', BaseSchema);
+module.exports = mongoose.model('Game', GameSchema);

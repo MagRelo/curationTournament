@@ -4,6 +4,9 @@
 const gameController = require('./controllers/game')
 const analyticsController = require('./controllers/analytics')
 
+const testContract = require('./models/contract')
+const Contract = require('mongoose').model('Contract')
+
 module.exports = function(app) {
 
   // client config
@@ -16,6 +19,22 @@ module.exports = function(app) {
 
   app.post('/api/game/next', gameController.nextPhase)
   app.post('/api/game', gameController.createGame)
+
+
+  app.post('/api/contract', (req, res) => {
+
+    return Contract.initContract('local','')
+      .then(contract => {
+        res.send(contract)
+      })
+      .catch(error => {
+        console.log(error)
+        res.status(500).json({error: error.message})
+      })
+
+  })
+
+
 
 
 

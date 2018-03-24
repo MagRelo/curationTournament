@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const sockets = require('./sockets.js')
 
+
 // Express middleware
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
@@ -61,12 +62,21 @@ app.use(morgan('dev', {
   }
 }));
 
-
-// API ROUTING
-require('./api')(app);
-
+// start http server
 var server = app.listen(8080, function () {
   console.log('App running on port 8080')
 })
 
-sockets.startIo(server);
+// start sockets and add io to response object
+const io = sockets.startIo(server);
+app.use(function(req, res, next){
+  res.io = io;
+  next();
+})
+
+// create a game and watch for it's transactions on the chain
+// const eth = require('./ethereum/drizzleNode.js')
+// eth.watchForContractTxn('test Address', 'ropsten')
+
+// API ROUTING
+require('./api')(app);

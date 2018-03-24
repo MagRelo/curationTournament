@@ -20,16 +20,14 @@ exports.createGame = (req, res) => {
   const options = req.body
 
   // setup with game
-  newGame.contractNetwork = ''
-  newGame.contractAddress = ''
+  newGame.contractNetwork = options.contractNetwork
+  newGame.contractAddress = options.contractAddress
 
   // from contract, eventually
-  newGame.ownerAddress = '0x106f681949e222d57a175cd85685e3bd9975b973'
-  newGame.oracleAddress = '0x106f681949e222d57a175cd85685e3bd9975b973'
-  newGame.minDeposit = 0.1
   newGame.contributors = ['5aad40d6ec802afd31b96bf2', '5aad40ecec802afd31b96bf3']
 
   newGame.save()
+    .then(gameDoc => {})
     .then(gameDoc => { res.json(gameDoc) })
     .catch(error => {
       console.log(error)

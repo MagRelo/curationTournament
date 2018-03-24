@@ -35,6 +35,7 @@
     "http-proxy-middleware": "0.17.2",
     "jest": "18.1.0",
     "json-loader": "0.5.4",
+    "nodemon": "^1.17.2",
     "object-assign": "4.1.0",
     "path-exists": "2.1.0",
     "postcss-loader": "1.0.0",
@@ -105,7 +106,14 @@
     "test": "node scripts/test.js --env=jsdom",
     "client": "node scripts/start.js",
     "server": "node NODE_ENV=production server/app.js",
-    "dev": "NODE_ENV=development node --inspect server/app.js"
+    "dev": "NODE_ENV=development nodemon --inspect server/app.js"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "server/*"
+    ],
+    "delay": "2500",
+    "ext": "js json"
   },
   "jest": {
     "collectCoverageFrom": [
